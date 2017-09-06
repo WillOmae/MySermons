@@ -1,0 +1,596 @@
+﻿**********FROM RecentlyOpenedDocs.cs IN AppEngine**********
+
+//public RecentlyOpenedDocs(int idndnsakdn)
+//{
+//    XmlDocument xmlDoc = new XmlDocument();
+//    xmlDoc.Load(FileName);
+//    XmlDocument storedSermons = new XmlDocument();
+//    storedSermons.Load(FileNames.Sermons);
+
+//    bool found = false;
+//    for (int i = 0; i < xmlDoc.DocumentElement.ChildNodes.Count; i++)
+//    {
+//        found = false;
+//        for (int j = 0; j < storedSermons.DocumentElement.ChildNodes.Count; j++)
+//        {
+//            if (storedSermons.DocumentElement.ChildNodes[j].Attributes["ID"].Value ==
+//                xmlDoc.DocumentElement.ChildNodes[i].Attributes["ID"].Value)
+//            {
+//                found = true;
+//                break;
+//            }
+//        }
+//        if (!found)
+//        {
+//            xmlDoc.DocumentElement.RemoveChild(xmlDoc.DocumentElement.ChildNodes[i]);
+//            i--;
+//        }
+//    }
+//    xmlDoc.Save(FileName);
+//}
+//public static string[] OpenDocFromID(string ID)
+//{
+//    string[] arraySermonComponents;
+//    XmlDocument xmlDoc = new XmlDocument();
+//    xmlDoc.Load(fileName);
+//    foreach (XmlNode ENTRY in xmlDoc.DocumentElement.ChildNodes)
+//    {
+//        if (ENTRY.Attributes["ID"].Value == ID)
+//        {
+//            if (ID.StartsWith("SER_"))//It is a sermon
+//            {
+//                arraySermonComponents = Sermon.GetSermonComponents(int.Parse(ID));
+//                xmlDoc.Save(fileName);
+//                return arraySermonComponents;
+//            }
+//        }
+//    }
+//    xmlDoc.Save(fileName);
+//    return null;
+//}
+
+
+//public static void DeleteDocFromID(string ID)
+//{
+//    XmlDocument xmlDoc = new XmlDocument();
+//    xmlDoc.Load(fileName);
+//    foreach (XmlNode ENTRY in xmlDoc.DocumentElement.ChildNodes)
+//    {
+//        if (ENTRY.Attributes["ID"].Value == ID)
+//        {
+//            xmlDoc.DocumentElement.RemoveChild(ENTRY);
+//            xmlDoc.Save(fileName);
+//        }
+//    }
+//}
+
+
+//public static void AddNewNode(string entryID, string entryText)
+//{
+//    if (entryID.ToUpper().StartsWith("START") || entryID.ToUpper().StartsWith("TAB") ||
+//        entryText.ToUpper().StartsWith("START") || entryText.ToUpper().StartsWith("TAB"))
+//    {
+//        //do not include the startpage nor templates
+//        return;
+//    }
+//    XmlDocument xmlDoc = new XmlDocument();
+//    xmlDoc.Load(fileName);
+
+//    for (int i = 0; i < xmlDoc.DocumentElement.ChildNodes.Count; i++)
+//    {
+//        XmlNode Entry = xmlDoc.DocumentElement.ChildNodes[i];
+
+//        if (Entry.Attributes["ID"].Value == entryID)
+//        {
+//            /*  The entry already exists. No need to duplicate.
+//                Therefore, delete the previous entry and add the new one.*/
+//            xmlDoc.DocumentElement.RemoveChild(Entry);
+//        }
+//    }
+//    XmlNode ENTRY = xmlDoc.CreateElement("ENTRY");
+//    xmlDoc.DocumentElement.AppendChild(ENTRY);
+
+//    XmlAttribute ID = xmlDoc.CreateAttribute("ID");
+//    ID.Value = entryID;
+//    XmlAttribute TEXT = xmlDoc.CreateAttribute("TEXT");
+//    TEXT.Value = entryText;
+
+//    ENTRY.Attributes.Append(ID);
+//    ENTRY.Attributes.Append(TEXT);
+
+//    xmlDoc.Save(fileName);
+//}
+
+
+**********FROM Sermon.cs IN AppEngine**********
+
+        /// <summary>
+        /// Creates a new Xml file to hold stored sermons
+        /// </summary>
+        /// <param name="path">The path to the file to be created.</param>
+        static public void CreateNewSermonFile(string path)
+        {
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(File.Create(path)))
+                {
+                    sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+                    sw.WriteLine("<MYSERMONS />");
+                }
+            }
+            catch
+            {
+                try
+                {
+                    using (StreamWriter sw = new StreamWriter(File.Create(FileNames.Sermons)))
+                    {
+                        sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+                        sw.WriteLine("<MYSERMONS />");
+                    }
+                }
+                catch
+                {
+                    MessageBox.Show("An error was encountered while accessing core files.\nYou may need to reinstall the application.", "File access error: Sermons", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+/// <summary>
+/// Appends new nodes to the XmlDocument.
+/// </summary>
+/// <param name="arraySermonComponents">Array containing sermon components to be appended.</param>
+//static public int WriteToXmlDoc(string[] arraySermonComponents)
+//{
+//    ConfirmLoad();
+
+//    foreach (XmlNode sermon in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        //confirm existence of the sermon before it is added
+//        if (sermon.Attributes["SPEAKER"].Value.ToLower() == arraySermonComponents[iSpeaker].ToLower()
+//            && sermon.Attributes["TITLE"].Value.ToLower() == arraySermonComponents[iTitle].ToLower()
+//            && sermon.Attributes["VENUE"].Value.ToLower() == arraySermonComponents[iVenue].ToLower())
+//        {
+//            if (sermon.ChildNodes[0].InnerText == arraySermonComponents[iContent])
+//            {
+//                MessageBox.Show("The sermon: " + arraySermonComponents[iTitle]
+//                    + "\nby: " + arraySermonComponents[iSpeaker]
+//                    + " already exists.");
+//                return -1;//did not add the sermon
+//            }
+//        }
+//    }
+
+//    XmlNode SERMON = StoredSermons.CreateElement("SERMON");
+//    StoredSermons.DocumentElement.AppendChild(SERMON);
+//    XmlAttribute ID = StoredSermons.CreateAttribute("ID");
+//    ID.Value = arraySermonComponents[iID];
+//    XmlAttribute DAYNAME = StoredSermons.CreateAttribute("DAYNAME");
+//    DAYNAME.Value = arraySermonComponents[iDay];
+//    XmlAttribute DATE = StoredSermons.CreateAttribute("DATE");
+//    DATE.Value = arraySermonComponents[iDate];
+//    XmlAttribute MONTH = StoredSermons.CreateAttribute("MONTH");
+//    MONTH.Value = arraySermonComponents[iMonth];
+//    XmlAttribute YEAR = StoredSermons.CreateAttribute("YEAR");
+//    YEAR.Value = arraySermonComponents[iYear];
+//    XmlAttribute HOUR = StoredSermons.CreateAttribute("HOUR");
+//    HOUR.Value = arraySermonComponents[iHour];
+//    XmlAttribute MINUTE = StoredSermons.CreateAttribute("MINUTE");
+//    MINUTE.Value = arraySermonComponents[iMinute];
+//    XmlAttribute VENUE = StoredSermons.CreateAttribute("VENUE");
+//    VENUE.Value = arraySermonComponents[iVenue];
+//    XmlAttribute TOWN = StoredSermons.CreateAttribute("TOWN");
+//    TOWN.Value = arraySermonComponents[iVenueTown];
+//    XmlAttribute ACTIVITY = StoredSermons.CreateAttribute("ACTIVITY");
+//    ACTIVITY.Value = arraySermonComponents[iVenueActivity];
+//    XmlAttribute SPEAKER = StoredSermons.CreateAttribute("SPEAKER");
+//    SPEAKER.Value = arraySermonComponents[iSpeaker];
+//    XmlAttribute TITLE = StoredSermons.CreateAttribute("TITLE");
+//    TITLE.Value = arraySermonComponents[iTitle];
+//    XmlAttribute TEXT = StoredSermons.CreateAttribute("TEXT");
+//    TEXT.Value = arraySermonComponents[iKeyText];
+//    XmlAttribute HYMN = StoredSermons.CreateAttribute("HYMN");
+//    HYMN.Value = arraySermonComponents[iHymn];
+
+//    XmlNode CONTENT = StoredSermons.CreateElement("CONTENT");
+//    CONTENT.AppendChild(StoredSermons.CreateTextNode(arraySermonComponents[iContent]));
+
+//    SERMON.Attributes.Append(ID);
+//    SERMON.Attributes.Append(DAYNAME);
+//    SERMON.Attributes.Append(DAYNAME);
+//    SERMON.Attributes.Append(DATE);
+//    SERMON.Attributes.Append(MONTH);
+//    SERMON.Attributes.Append(YEAR);
+//    SERMON.Attributes.Append(HOUR);
+//    SERMON.Attributes.Append(MINUTE);
+//    SERMON.Attributes.Append(VENUE);
+//    SERMON.Attributes.Append(TOWN);
+//    SERMON.Attributes.Append(ACTIVITY);
+//    SERMON.Attributes.Append(SPEAKER);
+//    SERMON.Attributes.Append(TITLE);
+//    SERMON.Attributes.Append(TEXT);
+//    SERMON.Attributes.Append(HYMN);
+
+//    SERMON.AppendChild(CONTENT);
+
+//    StoredSermons.Save(FileName);
+//    return 0;//successfully added the sermon
+//}
+
+
+
+
+//static public void OverwriteXMLFile(string[] arraySermonComponents)
+//{
+//    foreach (XmlNode sermon in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        if (sermon.Attributes["ID"].Value == arraySermonComponents[iID])
+//        {
+//            sermon.Attributes["DAYNAME"].Value = arraySermonComponents[iDay];
+//            sermon.Attributes["DATE"].Value = arraySermonComponents[iDate];
+//            sermon.Attributes["MONTH"].Value = arraySermonComponents[iMonth];
+//            sermon.Attributes["YEAR"].Value = arraySermonComponents[iYear];
+//            sermon.Attributes["HOUR"].Value = arraySermonComponents[iHour];
+//            sermon.Attributes["MINUTE"].Value = arraySermonComponents[iMinute];
+//            sermon.Attributes["VENUE"].Value = arraySermonComponents[iVenue];
+//            sermon.Attributes["TOWN"].Value = arraySermonComponents[iVenueTown];
+//            sermon.Attributes["ACTIVITY"].Value = arraySermonComponents[iVenueActivity];
+//            sermon.Attributes["SPEAKER"].Value = arraySermonComponents[iSpeaker];
+//            sermon.Attributes["TITLE"].Value = arraySermonComponents[iTitle];
+//            sermon.Attributes["TEXT"].Value = arraySermonComponents[iKeyText];
+//            sermon.Attributes["HYMN"].Value = arraySermonComponents[iHymn];
+//            sermon.ChildNodes[0].InnerText = arraySermonComponents[iContent];
+
+//            break;
+//        }
+//    }
+//}
+
+
+/// <summary>
+/// Returns the number of sermon nodes present.
+/// </summary>
+/// <returns>(int) Number of sermon nodes.</returns>
+//static public int GetSermonNodeCount()
+//{
+//    ConfirmLoad();
+
+//    return StoredSermons.DocumentElement.ChildNodes.Count;
+//}
+
+
+/// <summary>
+/// Gets the sermon components, which are simply strings.
+/// </summary>
+/// <param name="sermonID">The parent XML node name.</param>
+/// <returns>An array of strings of the sermon components.</returns>
+//static public string[] GetSermonComponents(string sermonID)
+//{
+//    ConfirmLoad();
+
+//    ID = sermonID;
+//    date_time = new MyDateTime();
+//    venue = new Venue();
+
+//    foreach (XmlElement SERMON in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        if (SERMON.Attributes["ID"].Value == sermonID)
+//        {
+//            foreach (XmlAttribute attribute in SERMON.Attributes)
+//            {
+//                switch (attribute.Name)
+//                {
+//                    case "DAYNAME":
+//                        date_time.DayName = attribute.Value;
+//                        break;
+//                    case "DATE":
+//                        date_time.DayDate = attribute.Value;
+//                        break;
+//                    case "MONTH":
+//                        date_time.Month = attribute.Value;
+//                        break;
+//                    case "YEAR":
+//                        date_time.Year = attribute.Value;
+//                        break;
+//                    case "HOUR":
+//                        date_time.Hours = attribute.Value;
+//                        break;
+//                    case "MINUTE":
+//                        date_time.Minutes = attribute.Value;
+//                        break;
+//                    case "VENUE":
+//                        venue.Name = attribute.Value;
+//                        break;
+//                    case "TOWN":
+//                        venue.Town = attribute.Value;
+//                        break;
+//                    case "ACTIVITY":
+//                        venue.Activity = attribute.Value;
+//                        break;
+//                    case "SPEAKER":
+//                        Speaker = attribute.Value;
+//                        break;
+//                    case "TITLE":
+//                        Title = attribute.Value;
+//                        break;
+//                    case "TEXT":
+//                        KeyText = attribute.Value;
+//                        break;
+//                    case "HYMN":
+//                        Hymn = attribute.Value;
+//                        break;
+//                }
+//            }
+//            Content = SERMON.ChildNodes[0].InnerText;
+//        }
+//    }
+
+//    return ComponentsToString();
+//}
+
+
+/// <summary>
+/// Ensures that the XML fle has been successfully loaded into memory.
+/// </summary>
+//static public void ConfirmLoad()
+//{
+//    if (!fileLoaded)
+//    {
+//        LoadXMLFile(FileName);
+//    }
+//}
+
+
+/// <summary>
+/// Saves the XML file.
+/// </summary>
+/// <param name="path">The path to the XML file.</param>
+//static public void SaveXMLFile(string path)
+//{
+//    ConfirmLoad();
+
+//    StoredSermons.Save(path);
+//}
+
+
+/// <summary>
+/// Deletes the entire parent node specified.
+/// </summary>
+/// <param name="sermonID">The name os the parent node to be deleted.</param>
+//static public void DeleteNode(string sermonID)
+//{
+//    ConfirmLoad();
+
+//    foreach (XmlElement SERMON in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        if (SERMON.Attributes["ID"].Value == sermonID)
+//        {
+//            StoredSermons.DocumentElement.RemoveChild(SERMON);
+//            StoredSermons.Save(FileName);
+//        }
+//    }
+//}
+
+
+/// <summary>
+/// Loads the XML file into memory for access.
+/// </summary>
+/// <param name="path">The path to the XML file.</param>
+//static public void LoadXMLFile(string path)
+//{
+//    try
+//    {
+//        StoredSermons.Load(path);
+//        fileLoaded = true;
+//    }
+//    catch
+//    {
+//        MessageBox.Show("Couldn't load the default storage file.");
+//    }
+//}
+
+
+/// <summary>
+/// Gets the InnerText of a specific XML element within a sermon.
+/// </summary>
+/// <param name="sermonID">The parent XMK node name.</param>
+/// <param name="NODENAME">The name of the specific node whose InnerText is to be found.</param>
+/// <returns>The InnerText of the specified node.</returns>
+//static public string GetSermonComponent(string sermonID, string NODENAME)
+//{
+//    ConfirmLoad();
+
+//    foreach (XmlElement SERMON in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        if (SERMON.Name == sermonID)
+//        {
+//            for (int i = 0; i < SERMON.ChildNodes.Count; i++)
+//            {
+//                if (SERMON.ChildNodes[i].Name == NODENAME)
+//                {
+//                    return SERMON.ChildNodes[i].InnerText;
+//                }
+//            }
+//        }
+//    }
+//    return null;
+//}
+
+//#region ****************** EVENT HANDLERS ******************
+//static private void ehNodeInserted(object sender, XmlNodeChangedEventArgs e)
+//{
+//    //try
+//    //{
+//    //    if (e.Node.ParentNode.Name == "SERMON")
+//    //    {
+//    //        try
+//    //        {
+//    //            if (e.Node.ParentNode.Attributes["TITLE"].Value != null)
+//    //            {
+//    //                try
+//    //                {
+//    //                    if (e.Node.ParentNode.Attributes["ID"].Value != null)
+//    //                    {
+//    //                        //parentForm.treeviewAvailableDocs = treeViewEx;
+//    //                        treeViewEx.AddNewTreeNode("SERMON", e.Node.ParentNode.Attributes["TITLE"].Value, e.Node.ParentNode.Attributes["ID"].Value);
+//    //                    }
+//    //                }
+//    //                catch { }
+//    //            }
+//    //        }
+//    //        catch { }
+//    //    }
+//    //}
+//    //catch { }
+
+//}
+//static private void ehNodeRemoved(object sender, XmlNodeChangedEventArgs e)
+//{
+//    if (e.Node.Name.StartsWith("SERMON"))
+//    {
+//        MessageBox.Show(e.Node.Name);
+//    }
+//}
+//#endregion
+
+/// <summary>
+/// Determines which nodes should be considered as parent nodes.
+/// </summary>
+/// <param name="FILTER">The name of the parent nodes.</param>
+//static public string[,] GetParentNodes(string FILTER)
+//{
+//    ConfirmLoad();
+
+//    string[,] arrayParentNodes = new string[2, StoredSermons.DocumentElement.ChildNodes.Count];
+//    int index = 0;
+
+//    foreach (XmlElement SERMON in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        arrayParentNodes[0, index] = SERMON.Attributes[FILTER].Value;
+//        //arrayParentNodes[1, index] = SERMON.Attributes["ID"].Value;
+//        arrayParentNodes[1, index] = "PARENTNODE";
+//        index++;
+//    }
+//    return arrayParentNodes;
+//}
+
+
+//static public string[,] GetChildNodes(string TITLE, string FILTER, string FILTERtext)
+//{
+//    ConfirmLoad();
+
+//    int index = 0, length = 0;
+
+//    foreach (XmlElement SERMON in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        if (SERMON.Attributes[FILTER].Value == FILTERtext)
+//        {
+//            length++;
+//        }
+//    }
+
+//    string[,] arrayChildNodes = new string[2, length];
+//    foreach (XmlElement SERMON in StoredSermons.DocumentElement.ChildNodes)
+//    {
+//        if (SERMON.Attributes[FILTER].Value == FILTERtext)
+//        {
+//            arrayChildNodes[0, index] = SERMON.Attributes[TITLE].Value;
+//            arrayChildNodes[1, index] = SERMON.Attributes["ID"].Value;
+//            index++;
+//        }
+//    }
+//    return arrayChildNodes;
+//}
+
+
+/// <summary>
+/// Carries out a search for the specified string in the specified node.
+/// </summary>
+/// <param name="NODENAME">The name of the node to consider.</param>
+/// <param name="searchString">The string to be searched for.</param>
+/// <param name="considerCase">Should the case be considered?</param>
+/// <param name="matchWhole">Should the whole word be matched?</param>
+/// <returns>An two-dimensional array holding: Speaker, Title and ID of all found sermons.</returns>
+//static public string[,] Search(string NODENAME, string searchString, bool considerCase, bool matchWhole)
+//{
+//    ConfirmLoad();
+//    List<string> foundItems_Speaker = new List<string>();
+//    List<string> foundItems_Title = new List<string>();
+//    List<string> foundItems_ID = new List<string>();
+
+//    try
+//    {
+//        if (!considerCase)//considerCase == false: do not match case
+//        {
+//            if (matchWhole)
+//            {
+//                foreach (XmlNode child in StoredSermons.DocumentElement.ChildNodes)
+//                {
+//                    if (child.Attributes[NODENAME].Value.ToLower() == searchString.ToLower())
+//                    {
+//                        GetFoundItemsValues(ref foundItems_ID, ref foundItems_Speaker, ref foundItems_Title, child);
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                foreach (XmlNode child in StoredSermons.DocumentElement.ChildNodes)
+//                {
+//                    if (StringSearch.AllExist_InOrder(child.Attributes[NODENAME].Value.ToLower(), searchString.ToLower()))
+//                    {
+//                        GetFoundItemsValues(ref foundItems_ID, ref foundItems_Speaker, ref foundItems_Title, child);
+//                    }
+//                }
+//            }
+//        }
+//        else//considerCase == true: match case
+//        {
+//            if (matchWhole)
+//            {
+//                foreach (XmlNode child in StoredSermons.DocumentElement.ChildNodes)
+//                {
+//                    if (child.Attributes[NODENAME].Value == searchString)
+//                    {
+//                        GetFoundItemsValues(ref foundItems_ID, ref foundItems_Speaker, ref foundItems_Title, child);
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                foreach (XmlNode child in StoredSermons.DocumentElement.ChildNodes)
+//                {
+//                    if (StringSearch.AllExist_InOrder(child.Attributes[NODENAME].Value, searchString))
+//                    {
+//                        GetFoundItemsValues(ref foundItems_ID, ref foundItems_Speaker, ref foundItems_Title, child);
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    catch
+//    {
+//        //The NODENAME attribute does not exist
+//    }
+
+//    string[,] foundItems = new string[3, foundItems_Title.Count];
+//    for (int i = 0; i < foundItems_ID.Count; i++)
+//    {
+//        foundItems[0, i] = foundItems_Title[i];
+//        foundItems[1, i] = foundItems_Speaker[i];
+//        foundItems[2, i] = foundItems_ID[i];
+//    }
+//    return foundItems;
+//}
+
+
+//static private void GetFoundItemsValues(ref List<string> foundIDs, ref List<string> foundSpeakers, ref List<string> foundTitles, XmlNode node)
+//{
+//    try
+//    {
+//        foundIDs.Add(node.Attributes["ID"].Value);
+//        foundSpeakers.Add(node.Attributes["SPEAKER"].Value);
+//        foundTitles.Add(node.Attributes["TITLE"].Value);
+//    }
+//    catch
+//    {
+//        //the attribute names do not exist
+//    }
+//}

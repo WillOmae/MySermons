@@ -1,0 +1,5 @@
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Debug\AppEngine.dll
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Debug\AppEngine.pdb
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\obj\Debug\AppEngine.dll
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\obj\Debug\AppEngine.pdb
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Debug\System.ValueTuple.dll
