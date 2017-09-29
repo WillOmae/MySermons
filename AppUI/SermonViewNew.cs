@@ -97,50 +97,66 @@ namespace AppUI
                 }
 
                 string venue;
+                if (string.IsNullOrEmpty(txbVenue_Name.Text))
+                    venue = "NOT SET";
                 if (txbVenue_Name.Text == txbVenue_Name.Watermark)
-                    venue = string.Empty;
+                    venue = "NOT SET";
                 else
                     venue = txbVenue_Name.Text;
 
                 string town;
+                if (string.IsNullOrEmpty(txbVenue_Town.Text))
+                    town = "NOT SET";
                 if (txbVenue_Town.Text == txbVenue_Town.Watermark)
-                    town = string.Empty;
+                    town = "NOT SET";
                 else
                     town = txbVenue_Town.Text;
 
                 string activity;
+                if (string.IsNullOrEmpty(txbVenue_Activity.Text))
+                    activity = "NOT SET";
                 if (txbVenue_Activity.Text == txbVenue_Activity.Watermark)
-                    activity = string.Empty;
+                    activity = "NOT SET";
                 else
                     activity = txbVenue_Activity.Text;
 
                 string speaker;
+                if (string.IsNullOrEmpty(txbSpeakerName.Text))
+                    speaker = "NOT SET";
                 if (txbSpeakerName.Text == txbSpeakerName.Watermark)
-                    speaker = string.Empty;
+                    speaker = "NOT SET";
                 else
                     speaker = txbSpeakerName.Text;
 
                 string keytext;
+                if (string.IsNullOrEmpty(txbKeyText.Text))
+                    keytext = "NOT SET";
                 if (txbKeyText.Text == txbKeyText.Watermark)
-                    keytext = string.Empty;
+                    keytext = "NOT SET";
                 else
                     keytext = txbKeyText.Text;
 
                 string hymn;
+                if (string.IsNullOrEmpty(txbHymn.Text))
+                    hymn = "NOT SET";
                 if (txbHymn.Text == txbHymn.Watermark)
-                    hymn = string.Empty;
+                    hymn = "NOT SET";
                 else
                     hymn = txbHymn.Text;
 
                 string title;
+                if (string.IsNullOrEmpty(txbTitle.Text))
+                    title = "NOT SET";
                 if (txbTitle.Text == txbTitle.Watermark)
-                    title = string.Empty;
+                    title = "NOT SET";
                 else
                     title = txbTitle.Text;
 
                 string theme;
+                if (string.IsNullOrEmpty(txbTheme.Text))
+                    theme = "NOT SET";
                 if (txbTheme.Text == txbTheme.Watermark)
-                    theme = string.Empty;
+                    theme = "NOT SET";
                 else
                     theme = txbTheme.Text;
 
@@ -478,7 +494,7 @@ namespace AppUI
             {
                 acsc.Add(theme.Name);
             }
-            txbSpeakerName.AutoCompleteCustomSource = acsc;
+            txbTheme.AutoCompleteCustomSource = acsc;
 
 
             var series = new AppEngine.Database.Series().SelectAll();
@@ -496,7 +512,7 @@ namespace AppUI
             Name = arraySermonComponents[iID];
 
             dtPicker.Value = DateTime.Parse(arraySermonComponents[iDateCreated]);
-            cmbxSeries.SelectedItem = arraySermonComponents[iSeries];
+            cmbxSeries.SelectedIndex = int.Parse(arraySermonComponents[iSeries]);
             txbVenue_Name.Text = arraySermonComponents[iVenue];
             txbVenue_Town.Text = arraySermonComponents[iVenueTown];
             txbVenue_Activity.Text = arraySermonComponents[iVenueActivity];

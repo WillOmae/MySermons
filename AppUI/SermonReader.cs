@@ -93,6 +93,21 @@ namespace AppUI
                     arraySermonComponents[Sermon.iVenueTown] = "[Town undisclosed]";
                 if (arraySermonComponents[Sermon.iVenueActivity] == "_default_value_")
                     arraySermonComponents[Sermon.iVenueActivity] = "Study";
+
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iVenue]))
+                    arraySermonComponents[Sermon.iVenue] = "NOT SET";
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iVenueTown]))
+                    arraySermonComponents[Sermon.iVenueTown] = "NOT SET";
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iVenueActivity]))
+                    arraySermonComponents[Sermon.iVenueActivity] = "NOT SET";
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iSpeaker]))
+                    arraySermonComponents[Sermon.iSpeaker] = "NOT SET";
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iKeyText]))
+                    arraySermonComponents[Sermon.iKeyText] = "NOT SET";
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iHymn]))
+                    arraySermonComponents[Sermon.iHymn] = "NOT SET";
+                if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iTheme]))
+                    arraySermonComponents[Sermon.iTheme] = "NOT SET";
             }
             catch {; }
         }

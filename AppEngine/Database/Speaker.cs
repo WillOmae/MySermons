@@ -88,7 +88,8 @@ namespace AppEngine.Database
             Speaker speaker = new Speaker();
             using (SQLiteConnection connection = new SQLiteConnection(FileNames.ConnectionString))
             {
-                connection.Open(); using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM SPEAKERS WHERE Name=@Name", connection))
+                connection.Open();
+                using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM SPEAKERS WHERE Name=@Name", connection))
                 {
                     command.Parameters.AddWithValue("@name", name);
 
@@ -109,7 +110,8 @@ namespace AppEngine.Database
             List<Speaker> list = new List<Speaker>();
             using (SQLiteConnection connection = new SQLiteConnection(FileNames.ConnectionString))
             {
-                connection.Open(); using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM SPEAKERS", connection))
+                connection.Open();
+                using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM SPEAKERS", connection))
                 {
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {

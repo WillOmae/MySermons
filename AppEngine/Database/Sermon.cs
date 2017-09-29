@@ -357,6 +357,44 @@ namespace AppEngine.Database
                 return null;
             }
         }
+        public List<Sermon> SelectAllCondensed()
+        {
+            try
+            {
+                List<Sermon> list = new List<Sermon>();
+                using (SQLiteConnection connection = new SQLiteConnection(FileNames.ConnectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand("SELECT SERMONS.Id AS sermonid,SERMONS.DateCreated AS datecreated,SERMONS.Title AS title,SERIES.Id AS seriesid,VENUES.Name AS venue,TOWNS.Name AS town,ACTIVITIES.Name AS activity,SPEAKERS.Name AS speaker, THEMES.Name AS theme FROM SERMONS JOIN SERIES ON SERMONS.Series=SERIES.Id JOIN VENUES ON SERMONS.Venue=VENUES.Id JOIN TOWNS ON SERMONS.Town=TOWNS.Id JOIN ACTIVITIES ON SERMONS.Activity=ACTIVITIES.Id JOIN SPEAKERS ON SERMONS.Speaker=SPEAKERS.Id JOIN THEMES ON SERMONS.Theme=THEMES.Id", connection))
+                    {
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Sermon sermon = new Sermon()
+                                {
+                                    Id = int.Parse(reader["sermonid"].ToString()),
+                                    SeriesId = int.Parse(reader["seriesid"].ToString()),
+                                    DateCreated = DateTime.Parse(reader["datecreated"].ToString()),
+                                    Title = reader["title"].ToString(),
+                                    Theme = reader["theme"].ToString(),
+                                    Activity = reader["activity"].ToString(),
+                                    Speaker = reader["speaker"].ToString(),
+                                    Town = reader["town"].ToString(),
+                                    Venue = reader["venue"].ToString()
+                                };
+                                list.Add(sermon);
+                            }
+                        }
+                    }
+                }
+                return list;
+            }
+            catch
+            {
+                return null;
+            }
+        }
         public List<Sermon> SelectMany(string column, string value)
         {
             List<Sermon> list = new List<Sermon>();

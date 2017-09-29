@@ -80,7 +80,7 @@ namespace AppUI
                 lbl1.Location = new Point((size.Width - lbl1.Width) / 2, (size.Height / 2) - lbl1.Height);
                 
                 lbl2.Name = "lbl2";
-                lbl2.Text = Properties.Resources.Version;
+                lbl2.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 lbl2.Font = new Font("Magneto", Font.Size, GraphicsUnit.Point);
                 stringSize = g.MeasureString(lbl2.Text, lbl2.Font);
                 lbl2.Width = this.Width;

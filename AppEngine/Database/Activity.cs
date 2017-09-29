@@ -146,7 +146,8 @@ namespace AppEngine.Database
                 List<Activity> list = new List<Activity>();
                 using (SQLiteConnection connection = new SQLiteConnection(FileNames.ConnectionString))
                 {
-                    connection.Open(); using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM ACTIVITIES", connection))
+                    connection.Open();
+                    using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM ACTIVITIES", connection))
                     {
                         using (SQLiteDataReader reader = command.ExecuteReader())
                         {

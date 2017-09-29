@@ -155,7 +155,6 @@ namespace AppEngine
             {
                 return true;
             }
-
             return DialogResult.Yes == MessageBox.Show(
                 "MySermons version " + latestVersion.TrimEnd(char.Parse("\n")) + " is available. Would you like to download it?",
                 "Update available v" + latestVersion,

@@ -50,7 +50,7 @@ namespace AppUI
                     }
                 }
             }
-            if (doesChildNodeExist == false)
+            if (!doesChildNodeExist)
             {
                 string newParent = Sermon.GetSermonComponent(int.Parse(ID), FILTER);
                 foreach (TreeNode parentNode in Nodes)
@@ -68,7 +68,7 @@ namespace AppUI
                         break;
                     }//Else create a new ParentNode
                 }
-                if (doesParentNodeExist == false)
+                if (!doesParentNodeExist)
                 {
                     TreeNode tvnodeParentNew = new TreeNode(Sermon.GetSermonComponent(int.Parse(ID), FILTER));
                     TreeNode tvnodeChildNew = new TreeNode(Sermon.GetSermonComponent(int.Parse(ID), "Title"))
@@ -254,7 +254,8 @@ namespace AppUI
             {
                 BeginUpdate();
                 Nodes.Clear();
-                List<AppEngine.Database.Sermon> list = new AppEngine.Database.Sermon().SelectAll();
+                List<AppEngine.Database.Sermon> list = new AppEngine.Database.Sermon().SelectAllCondensed();
+
                 string[] parentNodes = Sermon.GetParentNodes(filter, list);
 
                 for (int i = 0; i < parentNodes.Length; i++)

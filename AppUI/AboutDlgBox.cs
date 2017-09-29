@@ -91,7 +91,7 @@ namespace AppUI
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 16);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Version 1.0.0";
+            this.label2.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             // 
             // label3
             // 
