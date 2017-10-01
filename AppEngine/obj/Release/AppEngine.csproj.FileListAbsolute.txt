@@ -4,13 +4,6 @@ C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\b
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.ValueTuple.dll
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\EntityFramework.xml
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\EntityFramework.SqlServer.xml
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.pdb
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.xml
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.dll.config
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.EF6.pdb
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.EF6.xml
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.Linq.pdb
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\System.Data.SQLite.Linq.xml
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\obj\Release\AppEngine.pdb
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\AppEngine.dll.config
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\AppEngine.dll
@@ -19,3 +12,5 @@ C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\b
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\AppLauncher.pdb
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\AppLauncher.exe.config
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\obj\Release\AppEngine.csprojResolveAssemblyReference.cache
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\AppEngine.dll.CodeAnalysisLog.xml
+C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppEngine\bin\Release\AppEngine.dll.lastcodeanalysissucceeded

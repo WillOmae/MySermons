@@ -1,4 +1,5 @@
 ﻿using AppEngine;
+using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
@@ -7,7 +8,6 @@ namespace AppUI
 {
     public class SplashScreen : Form
     {
-        private Thread splashThread;
         private ParentForm parentForm;
         public bool hasClosedSplashScreen = false;
 
@@ -18,14 +18,13 @@ namespace AppUI
         public SplashScreen(ParentForm parent)
         {
             parentForm = parent;
-
-            ThreadStart splashThreadStart = new ThreadStart(ShowSplashScreen);
-            splashThread = new Thread(splashThreadStart)
+            BackgroundWorker worker = new BackgroundWorker()
             {
-                IsBackground = false
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
             };
-            splashThread.SetApartmentState(ApartmentState.STA);
-            splashThread.Start();
+            worker.DoWork += delegate { ShowSplashScreen(); };
+            worker.RunWorkerAsync();
         }
         private void ShowSplashScreen()
         {
@@ -97,7 +96,6 @@ namespace AppUI
         private void EhClosing(object sender, FormClosingEventArgs e)
         {
             FadeOut();
-            splashThread = null;
             hasClosedSplashScreen = true;
         }
         private void FadeIn()

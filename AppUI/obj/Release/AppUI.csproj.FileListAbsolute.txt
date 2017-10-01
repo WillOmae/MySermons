@@ -8,9 +8,6 @@ C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\R
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\Release\AppEngine.dll.config
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\Release\EntityFramework.xml
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\Release\EntityFramework.SqlServer.xml
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\Release\System.Data.SQLite.pdb
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\Release\System.Data.SQLite.xml
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\bin\Release\System.Data.SQLite.dll.config
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\obj\Release\AppUI.csprojResolveAssemblyReference.cache
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\obj\Release\AppUI.LoadingForm.resources
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\AppUI\obj\Release\AppUI.Properties.Resources.resources
