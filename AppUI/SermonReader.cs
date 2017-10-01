@@ -46,11 +46,8 @@ namespace AppUI
                 {
                     Font = new Font("Times New Roman", 14)
                 };
-                textBox.Text += arraySermonComponents[Sermon.iTitle] + Environment.NewLine;
-                textBox.Text += "by ";
-                textBox.Text += arraySermonComponents[Sermon.iSpeaker] + Environment.NewLine;
-                textBox.Text += "Delivered on " + arraySermonComponents[Sermon.iDateCreated];
-                textBox.Text += "at " + arraySermonComponents[Sermon.iVenue] + ", " + arraySermonComponents[Sermon.iVenueTown] + " during (the) " + arraySermonComponents[Sermon.iVenueActivity] + Environment.NewLine + Environment.NewLine;
+                textBox.Text += arraySermonComponents[Sermon.iTitle] + " by " + arraySermonComponents[Sermon.iSpeaker] + Environment.NewLine;
+                textBox.Text += arraySermonComponents[Sermon.iDateCreated];
 
                 string RTF = textBox.Rtf;
                 string RTFNew1 = arraySermonComponents[Sermon.iContent].Remove(0, arraySermonComponents[Sermon.iContent].IndexOf(";}") + 2);
@@ -107,6 +104,21 @@ namespace AppUI
                 if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iHymn]))
                     arraySermonComponents[Sermon.iHymn] = "NOT SET";
                 if (string.IsNullOrEmpty(arraySermonComponents[Sermon.iTheme]))
+                    arraySermonComponents[Sermon.iTheme] = "NOT SET";
+
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iVenue]))
+                    arraySermonComponents[Sermon.iVenue] = "NOT SET";
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iVenueTown]))
+                    arraySermonComponents[Sermon.iVenueTown] = "NOT SET";
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iVenueActivity]))
+                    arraySermonComponents[Sermon.iVenueActivity] = "NOT SET";
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iSpeaker]))
+                    arraySermonComponents[Sermon.iSpeaker] = "NOT SET";
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iKeyText]))
+                    arraySermonComponents[Sermon.iKeyText] = "NOT SET";
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iHymn]))
+                    arraySermonComponents[Sermon.iHymn] = "NOT SET";
+                if (string.IsNullOrWhiteSpace(arraySermonComponents[Sermon.iTheme]))
                     arraySermonComponents[Sermon.iTheme] = "NOT SET";
             }
             catch {; }
