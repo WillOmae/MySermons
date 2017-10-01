@@ -1,7 +1,7 @@
 ﻿using AppEngine;
 using System.ComponentModel;
 using System.Drawing;
-using System.Threading;
+//using System.Threading;
 using System.Windows.Forms;
 
 namespace AppUI
@@ -57,7 +57,6 @@ namespace AppUI
                         Close();
                     }
                 }
-                Thread.Sleep(500);
             }
         }
         private void AddControls(Size size, SplashScreen parent)
