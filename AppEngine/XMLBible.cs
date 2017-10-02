@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace AppEngine
@@ -913,62 +914,60 @@ namespace AppEngine
             return listofVerses;
         }
 
+        /// <summary>
+        /// Check if the string is formatted in a way that is usable by the program.
+        /// </summary>
+        /// <param name="stringToParse">The string to be parsed.</param>
+        /// <param name="start">The beginning bcv structure.</param>
+        /// <param name="end">The ending bcv structure (for ranges).</param>
+        /// <returns>The bcv to display.</returns>
         public static string ParseForBCVStructs(string stringToParse, ref BCVSTRUCT start, ref BCVSTRUCT end)
         {
-            string bcv = "";
-            bool isRange = false;
-            int iPosRange = 0;
-
-            start.bcv = null;
-            start.Book = null;
-            start.Chapter = null;
-            start.Verse = null;
-            end.bcv = null;
-            end.Book = null;
-            end.Chapter = null;
-            end.Verse = null;
-
-            for (int i = 0; i < stringToParse.Length; i++)
+            if (Regex.IsMatch(stringToParse, @"\w{1,3}\.\d{1,3}\.\d{1,3}\-\w{1,3}\.\d{1,3}\.\d{1,3}"))
             {
-                if (stringToParse[i] == '-')
-                {
-                    isRange = true;
-                    iPosRange = i;
-                }
-            }
-            if (isRange)
-            {
-                bcv = stringToParse.Remove(0, (iPosRange + 1));
-                end.bcv = bcv;
-                end.Book = bcv.Remove(bcv.IndexOf("."));
-                end.Chapter = bcv.Remove(0, bcv.IndexOf(".") + 1);
+                int iPosRange = stringToParse.IndexOf(rangeSeparator);
+
+                var startString = stringToParse.Remove(iPosRange);
+                startString = startString.Replace("-", string.Empty);
+                start.bcv = startString;
+                start.Book = startString.Remove(startString.IndexOf("."));
+                start.Chapter = startString.Remove(0, startString.IndexOf(".") + 1);
+                start.Chapter = start.Chapter.Remove(start.Chapter.IndexOf("."));
+                start.Verse = startString.Remove(0, startString.LastIndexOf(".") + 1);
+
+                startString = stringToParse.Remove(0, (iPosRange + 1));
+                end.bcv = startString;
+                end.Book = startString.Remove(startString.IndexOf("."));
+                end.Chapter = startString.Remove(0, startString.IndexOf(".") + 1);
                 end.Chapter = end.Chapter.Remove(end.Chapter.IndexOf("."));
-                end.Verse = bcv.Remove(0, bcv.LastIndexOf(".") + 1);
+                end.Verse = startString.Remove(0, startString.LastIndexOf(".") + 1);
 
-                bcv = stringToParse.Remove(iPosRange);
+                startString = stringToParse.Remove(iPosRange);
+                
+                return start.bcv + "-" + end.bcv;
             }
             else
             {
-                bcv = stringToParse;
-            }
-            start.bcv = bcv;
-            start.Book = bcv.Remove(bcv.IndexOf("."));
-            start.Chapter = bcv.Remove(0, bcv.IndexOf(".") + 1);
-            start.Chapter = start.Chapter.Remove(start.Chapter.IndexOf("."));
-            start.Verse = bcv.Remove(0, bcv.LastIndexOf(".") + 1);
+                var startString = Regex.Match(stringToParse, @"\w{1,3}\.\d{1,3}\.\d{1,3}").Value;
+                if (!string.IsNullOrEmpty(startString))
+                {
+                    var bcv = startString;
+                    start.bcv = bcv;
+                    start.Book = bcv.Remove(bcv.IndexOf("."));
+                    start.Chapter = bcv.Remove(0, bcv.IndexOf(".") + 1);
+                    start.Chapter = start.Chapter.Remove(start.Chapter.IndexOf("."));
+                    start.Verse = bcv.Remove(0, bcv.LastIndexOf(".") + 1);
 
-            string bcvToDisplay = "";
-            if (end.Book == null)//no range: show single bcv
-            {
-                bcvToDisplay = start.bcv;
-            }
-            else//range: show start and end bcv's
-            {
-                bcvToDisplay = start.bcv + "-" + end.bcv;
-            }
-            //end of update
+                    end.bcv = null;
+                    end.Book = null;
+                    end.Chapter = null;
+                    end.Chapter = null;
+                    end.Verse = null;
 
-            return bcvToDisplay;
+                    return start.bcv;
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>
