@@ -1,7 +1,7 @@
 ﻿using AppEngine;
 using System;
 using System.Drawing;
-using System.Threading;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace AppUI
@@ -171,8 +171,7 @@ namespace AppUI
             textBox.Cursor = Cursors.IBeam;
         }
 
-
-        private string szText = "";
+        
         /// <summary>
         /// When the form is shown, a background thread is started which detects and updates verse links in the text box.
         /// </summary>
@@ -180,59 +179,15 @@ namespace AppUI
         /// <param name="e"></param>
         private void FormShown(object sender, EventArgs e)
         {
-            ThreadStart threadStartGetLinks = new ThreadStart(GetLinks);
-            Thread threadGetLinks = new Thread(threadStartGetLinks);
+            textBox.StopRepaint();
             textBox.Rtf = RTF;
-            szText = textBox.Text;
-
-            threadGetLinks.IsBackground = true;
-            threadGetLinks.Start();
-        }
-
-        delegate void myDelegate(string linkText);
-        private void GetLinks()
-        {
-            myDelegate delegate0 = new myDelegate(SuspendLayout);
-            textBox.Invoke(delegate0, string.Empty);
-
-            string bcv = "";
-            XMLBible.BCVSTRUCT start = new XMLBible.BCVSTRUCT(), end = new XMLBible.BCVSTRUCT();
-            bool isRange = false;
-
-            for (int i = 0; i < szText.Length; i++)
+            var rangeMatches = Regex.Matches(textBox.Text, @"\b\w{3}\.\d{1,3}\.\d{1,3}\b\-\b\w{3}\.\d{1,3}\.\d{1,3}\b|\b\w{3}\.\d{1,3}\.\d{1,3}\b");
+            foreach (Match match in rangeMatches)
             {
-                if (char.IsPunctuation(szText[i]) && szText[i] == '.')
-                {
-                    try
-                    {
-                        if (i < (szText.Length - 1) && char.IsDigit(szText[i + 1]))
-                        {
-                            isRange = false;//determines whether there is a range of verses or not
-
-                            bcv = GetWord(szText, i, out i, out isRange);
-
-                            if (isRange == true)
-                            {
-                                bcv = bcv + "-" + GetWord(szText, i, out i, out isRange);
-                            }
-
-                            string linkText = XMLBible.ParseForBCVStructs(bcv, ref start, ref end);
-
-                            myDelegate delegate1 = new myDelegate(InsertLink);
-                            try
-                            {
-                                textBox.Invoke(delegate1, linkText);
-                            }
-                            catch {; }
-                        }
-                    }
-                    catch { }
-                }
+                InsertLink(match.Value);
             }
-            myDelegate delegate2 = new myDelegate(BackToStart);
-            textBox.Invoke(delegate2, string.Empty);
-            myDelegate delegate3 = new myDelegate(ResumeLayout);
-            textBox.Invoke(delegate3, string.Empty);
+            BackToStart();
+            textBox.StartRepaint();
         }
         /// <summary>
         /// Determines the start and end of a bcv, then extracts the substring from the text.
@@ -348,7 +303,7 @@ namespace AppUI
             }
             catch { };
         }
-        private void BackToStart(string empty)
+        private void BackToStart()
         {
             textBox.SelectionStart = 0;
         }
