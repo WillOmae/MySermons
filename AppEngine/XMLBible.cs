@@ -856,7 +856,7 @@ namespace AppEngine
                     return start.bcv;
                 }
             }
-            return string.Empty;
+            return "NOT_A_VERSE";
         }
 
         /// <summary>

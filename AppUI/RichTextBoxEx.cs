@@ -221,10 +221,16 @@ namespace AppUI
 
                 XMLBible.BCVSTRUCT start = new XMLBible.BCVSTRUCT();
                 XMLBible.BCVSTRUCT end = new XMLBible.BCVSTRUCT();
-                XMLBible.ParseForBCVStructs(e.LinkText, ref start, ref end);
-                szHeader = e.LinkText;
-                listofTextToDisplay = XMLBible.GetVerseText(ref start, ref end);
-                TextCardHolder PopUp = new TextCardHolder(listofTextToDisplay.ToArray(), szHeader);
+                if (XMLBible.ParseForBCVStructs(e.LinkText, ref start, ref end) != "NOT_A_VERSE")
+                {
+                    szHeader = e.LinkText;
+                    listofTextToDisplay = XMLBible.GetVerseText(ref start, ref end);
+                    TextCardHolder PopUp = new TextCardHolder(listofTextToDisplay.ToArray(), szHeader);
+                }
+                else//launch required process to handle the link
+                {
+                    System.Diagnostics.Process.Start(e.LinkText);
+                }
             }
             catch (Exception exception)
             {
