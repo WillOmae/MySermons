@@ -142,7 +142,10 @@ namespace AppEngine
         {
             //ensure uniformity in parsing all strings, add blockseparator to the end of the string
             //the blockSeparator must exist in all strings
-            stringToParse = stringToParse.Insert(stringToParse.Length, blockSeparator.ToString());
+            if (!stringToParse.EndsWith(blockSeparator.ToString()))
+            {
+                stringToParse += blockSeparator;
+            }
 
             //create a string variable to hold one block to be passed to the next parsing function
             string stringToPass = "";
@@ -179,7 +182,10 @@ namespace AppEngine
         private static void ParseString1(string stringToParse, ref List<BCVRANGE> listOfBCVRanges)
         {
             //ensure uniformity in parsing all strings: inblockSeparator must exist in all strings
-            stringToParse = stringToParse.Insert(stringToParse.Length, inblockSeparator.ToString());
+            if (!stringToParse.EndsWith(inblockSeparator.ToString()))
+            {
+                stringToParse += inblockSeparator;
+            }
 
             BCVSTRUCT bibleTextCurrent = new BCVSTRUCT()
             {
