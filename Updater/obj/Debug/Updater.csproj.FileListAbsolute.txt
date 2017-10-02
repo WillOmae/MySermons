@@ -1,5 +1,0 @@
-C:\Users\Wilbur Omae\documents\visual studio 2017\Projects\MySermonsUpdater\Updater\bin\Debug\Updater.exe.config
-C:\Users\Wilbur Omae\documents\visual studio 2017\Projects\MySermonsUpdater\Updater\bin\Debug\Updater.exe
-C:\Users\Wilbur Omae\documents\visual studio 2017\Projects\MySermonsUpdater\Updater\bin\Debug\Updater.pdb
-C:\Users\Wilbur Omae\documents\visual studio 2017\Projects\MySermonsUpdater\Updater\obj\Debug\Updater.exe
-C:\Users\Wilbur Omae\documents\visual studio 2017\Projects\MySermonsUpdater\Updater\obj\Debug\Updater.pdb

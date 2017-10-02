@@ -178,8 +178,7 @@ namespace AppEngine
         /// <param name="listOfBCVRanges">The list to be updated passed by reference.</param>
         private static void ParseString1(string stringToParse, ref List<BCVRANGE> listOfBCVRanges)
         {
-            //ensure uniformity in parsing all strings:
-            //inblockSeparator must exist in all strings
+            //ensure uniformity in parsing all strings: inblockSeparator must exist in all strings
             stringToParse = stringToParse.Insert(stringToParse.Length, inblockSeparator.ToString());
 
             BCVSTRUCT bibleTextCurrent = new BCVSTRUCT()
