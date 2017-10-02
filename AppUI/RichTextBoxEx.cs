@@ -288,8 +288,13 @@ namespace AppUI
         private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
         private const int WM_USER = 0x0400;
+        private const int WM_SETREDRAW = 0x000B;
+
+        private const int EM_FORMATRANGE = WM_USER + 57;
         private const int EM_GETCHARFORMAT = WM_USER + 58;
         private const int EM_SETCHARFORMAT = WM_USER + 68;
+        private const int EM_GETEVENTMASK = WM_USER + 59;
+        private const int EM_SETEVENTMASK = WM_USER + 69;
 
         private const int SCF_SELECTION = 0x0001;
         private const int SCF_WORD = 0x0002;
@@ -425,6 +430,7 @@ namespace AppUI
             sb.Append(@"\b0\b0");
 
             SelectedRtf = sb.ToString();
+            SetSelectionLink(true);
             //SelectionStart = position;
             //SelectedRtf = sb.ToString();
             #region
@@ -526,7 +532,7 @@ namespace AppUI
             Marshal.FreeCoTaskMem(lpar);
             return state;
         }
-
+        
         #endregion
 
 
@@ -562,7 +568,6 @@ namespace AppUI
             public CHARRANGE chrg;         //Range of text to draw (see earlier declaration)
         }
 
-        private const int EM_FORMATRANGE = WM_USER + 57;
 
 
         // Render the contents of the RichTextBox for printing
@@ -616,5 +621,19 @@ namespace AppUI
             return res.ToInt32();
         }
         #endregion
+
+        private IntPtr eventMask;
+        public void StopRepaint()
+        {
+            SendMessage(this.Handle, WM_SETREDRAW, new IntPtr(0), IntPtr.Zero);
+            eventMask = SendMessage(this.Handle, EM_GETEVENTMASK, new IntPtr(0), IntPtr.Zero);
+        }
+        public void StartRepaint()
+        {
+            SendMessage(this.Handle, EM_SETEVENTMASK, new IntPtr(0), eventMask);
+            SendMessage(this.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
+
+            this.Invalidate();
+        }
     }
 }
