@@ -116,60 +116,10 @@ namespace AppUI
                 }
             }
         }
-        //private void CheckTextboxCharacters()
-        //{
-        //    char character = 'a';
-        //    character = Convert.ToChar(text.Remove(0, text.Length - 1));
-
-        //    //if (character == checker_initial)
-        //    //{
-        //    //    hashTagClosingState = (hashTagOpeningState == true) ? true : false;
-        //    //    hashTagOpeningState = (hashTagOpeningState == false) ? true : false;
-        //    //    if (hashTagClosingState == true)
-        //    //    {
-        //    //        string szVerse = "";
-
-        //    //        szVerse = text.Remove(0, text.IndexOf(checker_initial) + 1);//+1 to remove the character itself
-        //    //        szVerse = szVerse.Replace(Convert.ToString(checker_initial), "");
-
-        //    //        XMLBible readXMLBible = new XMLBible(szVerse);
-
-        //    //        if (readXMLBible.listOfBibleTextInfo.Count != 0 || readXMLBible.listOfBibleTextInfo != null)
-        //    //        {
-        //    //            foreach(XMLBible.BibleTextInfo BTI in readXMLBible.listOfBibleTextInfo)
-        //    //            {
-        //    //                MyDelegate myDelegate = new MyDelegate(InsertLinks);
-        //    //                try
-        //    //                {
-        //    //                    Invoke(myDelegate, BTI.bcv, BTI.verse);
-        //    //                }
-        //    //                catch(Exception exception)
-        //    //                {
-        //    //                    MessageBox.Show(exception.ToString());
-        //    //                }
-        //    //            }
-        //    //        }
-        //    //    }
-        //    //}
-        //}
-        /* The prime directive of Windows programming — Thou shalt not operate on a window
-         * from other than its creating thread ~Chris Sells
-         * The text of the textbox could not be updated safely from the secondary thread
-         * since it was created in the main thread.
-         */
         private void FxnInsertLinks(string szText, string szHyperlink, int position)
         {
             try
             {
-                //int iPos_Start = 0, iPos_End = 0, iPos_Temp = 0;
-
-                //iPos_Temp = Rtf.IndexOf(checker_initial);
-                //iPos_Start = Text.IndexOf(checker_initial);
-                //iPos_End = Text.LastIndexOf(checker_initial);
-
-                //Select(iPos_Start, (iPos_End - iPos_Start) + 1);
-                //SelectedText = "";
-
                 InsertLink(szText, szHyperlink, SelectionStart);
             }
             catch
