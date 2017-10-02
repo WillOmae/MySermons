@@ -583,335 +583,191 @@ namespace AppEngine
         /// <param name="start">The beginning of the range.</param>
         /// <param name="end">The end of the range (values optional).</param>
         /// <returns></returns>
-        public static string GetVerseText(ref BCVSTRUCT start, ref BCVSTRUCT end)
+        public static List<string> GetVerseText2(ref BCVSTRUCT start, ref BCVSTRUCT end)
         {
-            string verses = "";
-
+            List<string> listofVerses = new List<string>();
             if (end.Book == null)//No range; get single verse
             {
-                try
-                {
-                    foreach (XmlElement BOOK in KJVBibleNode.ChildNodes)
-                    {
-                        if (BOOK.Attributes["NAME"].Value == start.Book)
-                        {
-                            foreach (XmlElement CHAPTER in BOOK.ChildNodes)
-                            {
-                                if (CHAPTER.Attributes["NAME"].Value == start.Chapter)
-                                {
-                                    foreach (XmlElement VERSE in CHAPTER.ChildNodes)
-                                    {
-                                        if (VERSE.Attributes["BCV"].Value == start.bcv)
-                                        {
-                                            return (VERSE.Attributes["BCV"].Value + " " + VERSE.InnerText);
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    return null;
-                }
-                catch
-                {
-                    return null;//complete
-                }
+                listofVerses.Add(GetSingleVerse(start));
             }
-            else//There is a range i.e. both start and end are known. Need to determine which type of range
+            else//There is a range i.e. both start and end are known
             {
-                if (start.Verse == null)//Starting verse not given: start from beginning of the chapter
-                {
-                    start.Verse = "1";
-                    start.bcv = start.Book.ToUpper() + "." + start.Chapter + "." + start.Verse;//update bcv to include verse
-                }
-                if (end.Verse == null)//Ending verse not given: read until the end of the chapter
-                {
-                    foreach (XmlElement BOOKsample in KJVBibleNode.ChildNodes)
-                    {
-                        if (BOOKsample.Attributes["NAME"].Value == end.Book)
-                        {
-                            foreach (XmlElement CHAPTERsample in BOOKsample.ChildNodes)
-                            {
-                                if (CHAPTERsample.Attributes["NAME"].Value == start.Chapter)
-                                {
-                                    end.Verse = CHAPTERsample.ChildNodes.Count.ToString();
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    end.bcv = end.Book.ToUpper() + "." + end.Chapter + "." + end.Verse;//update bcv to include verse
-                }
-                
-                int chapterStart = Convert.ToInt32(start.Chapter);
-                int chapterEnd = Convert.ToInt32(end.Chapter);
-                int verseStart = Convert.ToInt32(start.Verse);
-                int verseEnd = Convert.ToInt32(end.Verse);
-                int verseCount = 1;
-                int numberofVerses = 0;
-
-                XmlNode startBOOK, endBOOK, BOOK;
-                BOOK = XMLDocument_Bible.CreateElement("GEN");
-                startBOOK = XMLDocument_Bible.CreateElement("GEN");
-                endBOOK = XMLDocument_Bible.CreateElement("REV");
-
+                bool startFound = false, endFound = false;
                 foreach (XmlElement BOOKsample in KJVBibleNode.ChildNodes)
                 {
                     if (BOOKsample.Attributes["NAME"].Value == start.Book)
                     {
-                        startBOOK = BOOKsample;
-                        BOOK = startBOOK;
+                        startFound = true;
                     }
                     if (BOOKsample.Attributes["NAME"].Value == end.Book)
                     {
-                        endBOOK = BOOKsample;
+                        endFound = true;
                     }
-                }
-
-                while (true)//this is an infinite loop: please ensure it does not become an infinite loop
-                {
-                    if (BOOK != null)//prevent NULL exceptions
+                    if (endFound)
                     {
-                        if (BOOK == startBOOK)
+                        if (startFound)
                         {
-                            for (int chapterCount = chapterStart; chapterCount <= BOOK.ChildNodes.Count; chapterCount++)
-                            {
-                                numberofVerses = BOOK.ChildNodes[chapterCount - 1].ChildNodes.Count;
-
-                                if (chapterCount == chapterStart)
-                                {
-                                    verseCount = verseStart;
-                                }
-                                else
-                                {
-                                    verseCount = 1;
-                                }
-                                for (; verseCount <= numberofVerses; verseCount++)
-                                {
-                                    if (start.Book == end.Book && chapterCount == chapterEnd && verseCount == verseEnd)
-                                    {
-                                        verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " ";
-                                        verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText + Environment.NewLine;
-                                        return verses;/*************///potential danger
-                                    }
-                                    verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " ";
-                                    verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText + Environment.NewLine;
-                                }
-                            }
-                        }
-                        else if (BOOK == endBOOK && BOOK != startBOOK)//only read up to specified chapter and verse
-                        {
-                            for (int chapterCount = 1; chapterCount <= BOOK.ChildNodes.Count; chapterCount++)
-                            {
-                                numberofVerses = BOOK.ChildNodes[chapterCount - 1].ChildNodes.Count;
-
-                                for (verseCount = 1; verseCount <= numberofVerses; verseCount++)
-                                {
-                                    if (chapterCount == chapterEnd && verseCount == verseEnd)
-                                    {
-                                        verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " ";
-                                        verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText + Environment.NewLine;
-                                        return verses;/*************///potential danger
-                                    }
-                                    verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " ";
-                                    verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText + Environment.NewLine;
-                                }
-                            }
-                            break;
-                        }
-                        else//read every chapter and verse unless it is the starting or ending BCVstruct
-                        {
-                            for (int chapterCount = 1; chapterCount <= BOOK.ChildNodes.Count; chapterCount++)
-                            {
-                                numberofVerses = BOOK.ChildNodes[chapterCount - 1].ChildNodes.Count;
-
-                                for (verseCount = 1; verseCount <= numberofVerses; verseCount++)
-                                {
-                                    verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " ";
-                                    verses += BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText + Environment.NewLine;
-                                }
-                            }
-                        }
-                        BOOK = BOOK.NextSibling;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                return verses;
-            }
-        }
-        /// <summary>
-        /// Gets verse text for the given range.
-        /// </summary>
-        /// <param name="start">The beginning of the range.</param>
-        /// <param name="end">The end of the range (values optional).</param>
-        /// <returns></returns>
-        public static List<string> GetVerseText2(ref BCVSTRUCT start, ref BCVSTRUCT end)
-        {
-            List<string> listofVerses = new List<string>();
-            try
-            {
-                if (end.Book == null)//No range; get single verse
-                {
-                    try
-                    {
-                        foreach (XmlElement BOOK in KJVBibleNode.ChildNodes)
-                        {
-                            if (BOOK.Attributes["NAME"].Value == start.Book)
-                            {
-                                foreach (XmlElement CHAPTER in BOOK.ChildNodes)
-                                {
-                                    if (CHAPTER.Attributes["ID"].Value == start.Chapter)
-                                    {
-                                        foreach (XmlElement VERSE in CHAPTER.ChildNodes)
-                                        {
-                                            if (VERSE.Attributes["BCV"].Value == start.bcv)
-                                            {
-                                                listofVerses.Add(VERSE.Attributes["BCV"].Value + " " + VERSE.InnerText);
-                                                return listofVerses;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        return null;
-                    }
-                    catch
-                    {
-                        return null;//complete
-                    }
-                }
-                else//There is a range i.e. both start and end are known. Need to determine which type of range
-                {
-                    if (start.Verse == null)//Starting verse not given: start from beginning of the chapter
-                    {
-                        start.Verse = "1";
-                        start.bcv = start.Book.ToUpper() + "." + start.Chapter + "." + start.Verse;//update bcv to include verse
-                    }
-                    if (end.Verse == null)//Ending verse not given: read until the end of the chapter
-                    {
-                        foreach (XmlElement BOOKsample in KJVBibleNode.ChildNodes)
-                        {
-                            if (BOOKsample.Attributes["NAME"].Value == end.Book)
-                            {
-                                foreach (XmlElement CHAPTERsample in BOOKsample.ChildNodes)
-                                {
-                                    if (CHAPTERsample.Attributes["ID"].Value == start.Chapter)
-                                    {
-                                        end.Verse = CHAPTERsample.ChildNodes.Count.ToString();
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        end.bcv = end.Book.ToUpper() + "." + end.Chapter + "." + end.Verse;//update bcv to include verse
-                    }
-                    
-                    int chapterStart = Convert.ToInt32(start.Chapter);
-                    int chapterEnd = Convert.ToInt32(end.Chapter);
-                    int verseStart = Convert.ToInt32(start.Verse);
-                    int verseEnd = Convert.ToInt32(end.Verse);
-                    int verseCount = 1;
-                    int numberofVerses = 0;
-
-                    XmlNode startBOOK, endBOOK, BOOK;
-                    BOOK = XMLDocument_Bible.CreateElement("GEN");
-                    startBOOK = XMLDocument_Bible.CreateElement("GEN");
-                    endBOOK = XMLDocument_Bible.CreateElement("REV");
-
-                    foreach (XmlElement BOOKsample in KJVBibleNode.ChildNodes)
-                    {
-                        if (BOOKsample.Attributes["NAME"].Value == start.Book)
-                        {
-                            startBOOK = BOOKsample;
-                            BOOK = startBOOK;
-                        }
-                        if (BOOKsample.Attributes["NAME"].Value == end.Book)
-                        {
-                            endBOOK = BOOKsample;
-                        }
-                    }
-
-                    while (true)//this is an infinite loop: please ensure it does not become an infinite loop
-                    {
-                        if (BOOK != null)//prevent NULL exceptions
-                        {
-                            if (BOOK == startBOOK)
-                            {
-                                for (int chapterCount = chapterStart; chapterCount <= BOOK.ChildNodes.Count; chapterCount++)
-                                {
-                                    numberofVerses = BOOK.ChildNodes[chapterCount - 1].ChildNodes.Count;
-
-                                    if (chapterCount == chapterStart)
-                                    {
-                                        verseCount = verseStart;
-                                    }
-                                    else
-                                    {
-                                        verseCount = 1;
-                                    }
-                                    for (; verseCount <= numberofVerses; verseCount++)
-                                    {
-                                        if (start.Book == end.Book && chapterCount == chapterEnd && verseCount == verseEnd)
-                                        {
-                                            listofVerses.Add(BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " " + BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText);
-                                            return listofVerses;/*************///potential danger
-                                        }
-                                        listofVerses.Add(BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " " + BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText);
-                                    }
-                                }
-                            }
-                            else if (BOOK == endBOOK && BOOK != startBOOK)//only read up to specified chapter and verse
-                            {
-                                for (int chapterCount = 1; chapterCount <= BOOK.ChildNodes.Count; chapterCount++)
-                                {
-                                    numberofVerses = BOOK.ChildNodes[chapterCount - 1].ChildNodes.Count;
-
-                                    for (verseCount = 1; verseCount <= numberofVerses; verseCount++)
-                                    {
-                                        if (chapterCount == chapterEnd && verseCount == verseEnd)
-                                        {
-                                            listofVerses.Add(BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " " + BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText);
-                                            return listofVerses;/*************///potential danger
-                                        }
-                                        listofVerses.Add(BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " " + BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText);
-                                    }
-                                }
-                                break;
-                            }
-                            else//read every chapter and verse unless it is the starting or ending BCVstruct
-                            {
-                                for (int chapterCount = 1; chapterCount <= BOOK.ChildNodes.Count; chapterCount++)
-                                {
-                                    numberofVerses = BOOK.ChildNodes[chapterCount - 1].ChildNodes.Count;
-
-                                    for (verseCount = 1; verseCount <= numberofVerses; verseCount++)
-                                    {
-                                        listofVerses.Add(BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].Attributes["BCV"].Value + " " + BOOK.ChildNodes[chapterCount - 1].ChildNodes[verseCount - 1].InnerText);
-                                    }
-                                }
-                            }
-                            BOOK = BOOK.NextSibling;
+                            return GetMultipleVerses(start, end);
                         }
                         else
                         {
-                            break;
+                            return null;
                         }
                     }
-                    return listofVerses;
+                }
+                return null;
+            }
+            return listofVerses;
+        }
+        private static string GetSingleVerse(BCVSTRUCT start)
+        {
+            try
+            {
+                foreach (XmlElement BOOK in KJVBibleNode.ChildNodes)
+                {
+                    if (BOOK.Attributes["NAME"].Value == start.Book)
+                    {
+                        foreach (XmlElement CHAPTER in BOOK.ChildNodes)
+                        {
+                            if (CHAPTER.Attributes["ID"].Value == start.Chapter)
+                            {
+                                foreach (XmlElement VERSE in CHAPTER.ChildNodes)
+                                {
+                                    if (VERSE.Attributes["BCV"].Value == start.bcv)
+                                    {
+                                        return VERSE.Attributes["BCV"].Value + " " + VERSE.InnerText;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                return string.Empty;
+            }
+            catch
+            {
+                return null;//complete
+            }
+        }
+        private static List<string> GetMultipleVerses(BCVSTRUCT start, BCVSTRUCT end)
+        {
+            if (start.Book == end.Book)
+            {
+                if (start.Chapter == end.Chapter)
+                {
+                    return GetMultipleVersesSameBookSameChapter(start.Book, int.Parse(start.Chapter) - 1, int.Parse(start.Verse) - 1, int.Parse(end.Verse) - 1);
+                }
+                else
+                {
+                    return GetMultipleVersesSameBook(start.Book, start, end);
                 }
             }
-            catch{; }
-            return listofVerses;
+            else
+            {
+                return GetMultipleVersesDifferentBooks(start, end);
+            }
+        }
+        private static List<string> GetMultipleVersesSameBookSameChapter(string book, int ch, int v1, int v2)
+        {
+            foreach (XmlNode BOOK in KJVBibleNode.ChildNodes)
+            {
+                if (BOOK.Attributes["NAME"].Value == book)
+                {
+                    List<string> list = new List<string>();
+                    for (int i = v1; i <= v2; i++)
+                    {
+                        list.Add(BOOK.ChildNodes[ch].ChildNodes[i].Attributes["BCV"].Value + " " + BOOK.ChildNodes[ch].ChildNodes[i].InnerText);
+                    }
+                    return list;
+                }
+            }
+            return null;
+        }
+        private static List<string> GetMultipleVersesSameBook(string book, BCVSTRUCT start, BCVSTRUCT end)
+        {
+            foreach (XmlNode BOOKSample in KJVBibleNode.ChildNodes)
+            {
+                XmlNode BOOK = BOOKSample;
+                if (BOOK.Attributes["NAME"].Value == book)
+                {
+                    List<string> list = new List<string>();
+                    int ch1 = int.Parse(start.Chapter) - 1, ch2 = int.Parse(end.Chapter) - 1;
+                    int v1, v2;
+                    for (int j = ch1; j <= ch2; j++)
+                    {
+                        var CHAPTER = BOOK.ChildNodes[j];
+                        if (j == ch1)//read the first chapter from the specified verse to the end
+                        {
+                            v1 = int.Parse(start.Verse);
+                            v2 = VerseCount(start.Book, start.Chapter);
+                        }
+                        else if (j == ch2)//read the last chapter from the beginning to the specified verse
+                        {
+                            v1 = 1;
+                            v2 = int.Parse(end.Verse);
+                        }
+                        else//read the chapter from the beginning to the end
+                        {
+                            v1 = 1;
+                            v2 = VerseCount(start.Book, (j + 1).ToString());
+                        }
+                        list.AddRange(GetMultipleVersesSameBookSameChapter(book, j, v1 - 1, v2 - 1));
+                        CHAPTER = CHAPTER.NextSibling;
+                    }
+                    return list;
+                }
+            }
+            return null;
+        }
+        private static List<string> GetMultipleVersesDifferentBooks(BCVSTRUCT start, BCVSTRUCT end)
+        {
+            XmlNode BOOK = null;
+            List<string> list = new List<string>();
+            BCVSTRUCT bookStart = new BCVSTRUCT(), bookEnd = new BCVSTRUCT();
+            string book;
+
+            foreach (XmlNode BOOKSample in KJVBibleNode.ChildNodes)
+            {
+                if (BOOKSample.Attributes["NAME"].Value == start.Book)
+                {
+                    BOOK = BOOKSample;
+                }
+            }
+            do
+            {
+                book = BOOK.Attributes["NAME"].Value;
+                if (book == start.Book)//read the first book from the specified chapter and verse to the end of the book
+                {
+                    bookStart = start;
+
+                    bookEnd.Book = start.Book;
+                    bookEnd.Chapter = ChapterCount(bookEnd.Book).ToString();
+                    bookEnd.Verse = VerseCount(bookEnd.Book, bookEnd.Chapter).ToString();
+                }
+                else if (book == end.Book)//read the last book from the beginning to the specified chapter and verse
+                {
+                    bookStart.Book = end.Book;
+                    bookStart.Chapter = "1";
+                    bookStart.Verse = "1";
+
+                    bookEnd = end;
+                }
+                else//read the chapter from the beginning to the end
+                {
+                    bookStart.Book = book;
+                    bookStart.Chapter = "1";
+                    bookStart.Verse = "1";
+
+                    bookEnd.Book = book;
+                    bookEnd.Chapter = ChapterCount(bookEnd.Book).ToString();
+                    bookEnd.Verse = VerseCount(bookEnd.Book, bookEnd.Chapter).ToString();
+                }
+                list.AddRange(GetMultipleVersesSameBook(book, bookStart, bookEnd));
+                BOOK = BOOK.NextSibling;
+            } while (book != end.Book);
+            return list;
         }
 
         /// <summary>
