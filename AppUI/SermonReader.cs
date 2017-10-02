@@ -1,5 +1,6 @@
 ﻿using AppEngine;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -179,15 +180,38 @@ namespace AppUI
         /// <param name="e"></param>
         private void FormShown(object sender, EventArgs e)
         {
-            textBox.StopRepaint();
-            textBox.Rtf = RTF;
-            var rangeMatches = Regex.Matches(textBox.Text, @"\b\w{3}\.\d{1,3}\.\d{1,3}\b\-\b\w{3}\.\d{1,3}\.\d{1,3}\b|\b\w{3}\.\d{1,3}\.\d{1,3}\b");
-            foreach (Match match in rangeMatches)
+            LoadingForm loadingForm = new LoadingForm();
+            BackgroundWorker bw = new BackgroundWorker()
             {
-                InsertLink(match.Value);
-            }
-            BackToStart();
-            textBox.StartRepaint();
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            bw.DoWork += delegate
+            {
+                textBox.StopRepaint();
+                textBox.Rtf = RTF;
+                var rangeMatches = Regex.Matches(textBox.Text, @"\b\w{3}\.\d{1,3}\.\d{1,3}\b\-\b\w{3}\.\d{1,3}\.\d{1,3}\b|\b\w{3}\.\d{1,3}\.\d{1,3}\b");
+                foreach (Match match in rangeMatches)
+                {
+                    InsertLink(match.Value);
+                }
+                BackToStart();
+            };
+            bw.RunWorkerCompleted += delegate
+            {
+                loadingForm.Close();
+                textBox.StartRepaint();
+            };
+            loadingForm.FormClosing += delegate
+            {
+                if (bw!=null && bw.IsBusy)
+                {
+                    bw.CancelAsync();
+                    textBox.StartRepaint();
+                }
+            };
+            bw.RunWorkerAsync();
+            loadingForm.ShowDialog();
         }
         /// <summary>
         /// Determines the start and end of a bcv, then extracts the substring from the text.
