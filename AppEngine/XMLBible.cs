@@ -577,13 +577,14 @@ namespace AppEngine
             catch{ }
             return szBookName;//if book was not found, null is returned.
         }
+
         /// <summary>
         /// Gets verse text for the given range.
         /// </summary>
         /// <param name="start">The beginning of the range.</param>
         /// <param name="end">The end of the range (values optional).</param>
         /// <returns></returns>
-        public static List<string> GetVerseText2(ref BCVSTRUCT start, ref BCVSTRUCT end)
+        public static List<string> GetVerseText(ref BCVSTRUCT start, ref BCVSTRUCT end)
         {
             List<string> listofVerses = new List<string>();
             if (end.Book == null)//No range; get single verse
@@ -619,6 +620,11 @@ namespace AppEngine
             }
             return listofVerses;
         }
+        /// <summary>
+        /// Get verse text for a single bcv.
+        /// </summary>
+        /// <param name="start">Specified bcv.</param>
+        /// <returns>Single verse text.</returns>
         private static string GetSingleVerse(BCVSTRUCT start)
         {
             try
@@ -651,6 +657,12 @@ namespace AppEngine
                 return null;//complete
             }
         }
+        /// <summary>
+        /// Handler for getting multiple verses.
+        /// </summary>
+        /// <param name="start">Specified beginning bcv.</param>
+        /// <param name="end">Specified ending bcv.</param>
+        /// <returns>List of verse texts.</returns>
         private static List<string> GetMultipleVerses(BCVSTRUCT start, BCVSTRUCT end)
         {
             if (start.Book == end.Book)
@@ -669,6 +681,14 @@ namespace AppEngine
                 return GetMultipleVersesDifferentBooks(start, end);
             }
         }
+        /// <summary>
+        /// Get multiple verses from the same chapter of a book.
+        /// </summary>
+        /// <param name="book">The common book.</param>
+        /// <param name="ch">The common chapter.</param>
+        /// <param name="v1">The beginning verse.</param>
+        /// <param name="v2">The ending verse.</param>
+        /// <returns>List of verse texts.</returns>
         private static List<string> GetMultipleVersesSameBookSameChapter(string book, int ch, int v1, int v2)
         {
             foreach (XmlNode BOOK in KJVBibleNode.ChildNodes)
@@ -685,6 +705,13 @@ namespace AppEngine
             }
             return null;
         }
+        /// <summary>
+        /// Get multiple verses from the a range of chapters of a book.
+        /// </summary>
+        /// <param name="book">The common book.</param>
+        /// <param name="start">The beginning bcv.</param>
+        /// <param name="end">The ending bcv.</param>
+        /// <returns>List of verse texts.</returns>
         private static List<string> GetMultipleVersesSameBook(string book, BCVSTRUCT start, BCVSTRUCT end)
         {
             foreach (XmlNode BOOKSample in KJVBibleNode.ChildNodes)
@@ -721,6 +748,12 @@ namespace AppEngine
             }
             return null;
         }
+        /// <summary>
+        /// Get multiple verses from a range of books.
+        /// </summary>
+        /// <param name="start">The beginning bcv.</param>
+        /// <param name="end">The ending bcv.</param>
+        /// <returns>List of verse texts.</returns>
         private static List<string> GetMultipleVersesDifferentBooks(BCVSTRUCT start, BCVSTRUCT end)
         {
             XmlNode BOOK = null;

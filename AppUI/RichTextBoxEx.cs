@@ -223,7 +223,7 @@ namespace AppUI
                 XMLBible.BCVSTRUCT end = new XMLBible.BCVSTRUCT();
                 XMLBible.ParseForBCVStructs(e.LinkText, ref start, ref end);
                 szHeader = e.LinkText;
-                listofTextToDisplay = XMLBible.GetVerseText2(ref start, ref end);
+                listofTextToDisplay = XMLBible.GetVerseText(ref start, ref end);
                 TextCardHolder PopUp = new TextCardHolder(listofTextToDisplay.ToArray(), szHeader);
             }
             catch (Exception exception)
