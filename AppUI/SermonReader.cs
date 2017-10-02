@@ -174,7 +174,7 @@ namespace AppUI
 
         
         /// <summary>
-        /// When the form is shown, a background thread is started which detects and updates verse links in the text box.
+        /// When the form is shown, verse links are detected and updated in the text box.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -213,93 +213,7 @@ namespace AppUI
             bw.RunWorkerAsync();
             loadingForm.ShowDialog();
         }
-        /// <summary>
-        /// Determines the start and end of a bcv, then extracts the substring from the text.
-        /// It also checks whether a range exists.
-        /// </summary>
-        /// <param name="text">The bulky text to search</param>
-        /// <param name="iSelectionStart">The start position</param>
-        /// <param name="endPos">The end of the bcv (it is an out parameter)</param>
-        /// <param name="isRange">A range exists or not (it is an out parameter)</param>
-        /// <returns></returns>
-        private string GetWord(string text, int iSelectionStart, out int endPos, out bool isRange)
-        {
-            bool recursion = false;
-
-            int wordEndPosition = iSelectionStart;
-            int currentPosition = wordEndPosition;
-
-            while (currentPosition >= 0 && text[currentPosition] != ' ' && text[currentPosition] != '\n' && text[currentPosition] != '\t' && text[currentPosition] != '\r')
-            {
-                if (char.IsPunctuation(text[currentPosition]) && text[currentPosition] != '.')
-                {//break at any punctuation other than '.'
-                    break;
-                }
-                else
-                {
-                    currentPosition--;
-                }
-            }
-            while (wordEndPosition < text.Length && text[wordEndPosition] != ' ' && text[wordEndPosition] != '\n' && text[wordEndPosition] != '\t' && text[wordEndPosition] != '\r' && text[wordEndPosition] != ';')
-            {
-                if (char.IsPunctuation(text[wordEndPosition]))
-                {
-                    try
-                    {
-                        if (text[wordEndPosition] == '.' && char.IsDigit(text[wordEndPosition + 1]))
-                        {
-                            //if punctuation is '.', check next character
-                            wordEndPosition++;
-                        }
-                        else if (text[wordEndPosition] == '-')
-                        {
-                            //if punctuation is '-', a few checks
-                            //if next char is letter or digit, notify of the existence of a range then break
-                            if (char.IsLetterOrDigit(text[wordEndPosition + 1]))
-                            {
-                                recursion = true;
-                            }
-                            else
-                            {
-                                recursion = false;
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            //break at any other punctuation
-                            break;
-                        }
-                    }
-                    catch
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    wordEndPosition++;
-                }
-            }
-            endPos = wordEndPosition + 1;//get the position just after the word end
-            if ((uint)((wordEndPosition - 1) - (currentPosition + 1)) < 2)
-            {//too short to be of value
-                endPos = wordEndPosition;
-                isRange = recursion;
-                return null;
-            }
-            string foundText = "";
-            //Just to check an error
-            try
-            {
-                foundText = text.Substring(currentPosition + 1, (wordEndPosition - 1 - currentPosition));
-            }
-            catch {; }
-
-            isRange = recursion;
-            return foundText;
-        }
-
+        
         private void InsertLink(string linkText)
         {
             try
@@ -330,14 +244,6 @@ namespace AppUI
         private void BackToStart()
         {
             textBox.SelectionStart = 0;
-        }
-        private void SuspendLayout(string empty)
-        {
-            textBox.SuspendLayout();
-        }
-        private void ResumeLayout(string empty)
-        {
-            textBox.ResumeLayout(true);
         }
     }
 }
