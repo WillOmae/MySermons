@@ -12,5 +12,3 @@ C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\MySermons\b
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\MySermons\obj\Release\MySermons.csprojResolveAssemblyReference.cache
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\MySermons\obj\Release\MySermons.exe
 C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\MySermons\obj\Release\MySermons.pdb
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\MySermons\bin\Release\MySermons.exe.CodeAnalysisLog.xml
-C:\Users\Wilbur Omae\Documents\Visual Studio 2017\Projects\MySermons\MySermons\bin\Release\MySermons.exe.lastcodeanalysissucceeded
