@@ -88,7 +88,7 @@ namespace AppEngine
         /// </summary>
         /// <param name="stringToParse">String passed to be parsed</param>
         /// <returns></returns>
-        public static List<BIBLETEXTINFO> ReadXMLBible(string stringToParse)
+        public static List<BIBLETEXTINFO> ParseStringToVerse(string stringToParse)
         {
             List<BIBLETEXTINFO> list = new List<BIBLETEXTINFO>();
 
