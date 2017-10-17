@@ -160,7 +160,7 @@ namespace AppUI
         private void ParentForm_Load(object sender, EventArgs e)
         {
             MainThread.InitialChecks();
-            XMLBible bible = new XMLBible();
+            XMLBible.LoadBibleIntoMemory();
         }
         /// <summary>
         ///     Occurs just after the form is first displayed.

@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* Author: Wilbur Omae
+ * Date: 
+ * RichTextBoxEx
+ * This is an extended RichTextBox with the following added capabilities:
+ *      Watermarking
+ *      Printing (necessary classes)
+ *      Custom links
+ */
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -200,10 +208,12 @@ namespace AppUI
                     {
                         MessageBox.Show("ERROR");
                     }
-
-                    Font prevFont = SelectionFont;//get initial font
-                    FxnGetVerse(szVerse, SelectionStart);
-                    SelectionFont = prevFont;//revert to previous font
+                    else
+                    {
+                        Font prevFont = SelectionFont;//get initial font
+                        FxnGetVerse(szVerse, SelectionStart);
+                        SelectionFont = prevFont;//revert to previous font
+                    }
                 }
             }
         }
