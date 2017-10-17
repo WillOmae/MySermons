@@ -1,4 +1,9 @@
-﻿using System;
+﻿/* Author: Wilbur Omae
+ * Date: 
+ * XMLBible
+ * This is a class that handles various operations on an XML Bible
+ */
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -69,17 +74,15 @@ namespace AppEngine
         }
 
         static private readonly char blockSeparator = ';', inblockSeparator = ',', rangeSeparator = '-', cvSeparator = ':';
-
+        
         /// <summary>
-        ///     Initialises a new instance of the XMLBible class.
+        /// Loads the XML file into memory.
         /// </summary>
-        /// <param name="stringToParse">String passed to be parsed.</param>
-        public XMLBible()
+        public static void LoadBibleIntoMemory()
         {
             xmldocumentbible = new XmlDocument();
             xmldocumentbible.Load(FileNames.Bible);
         }
-
         /// <summary>
         /// Parses user input to a form that the program can later use to display verses
         /// </summary>
