@@ -24,6 +24,12 @@ namespace AppUI
     public class RichTextBoxEx : RichTextBox
     {
         #region Global Variables
+        private struct BOUNDS
+        {
+            public int bound1;
+            public int bound2;
+        }
+        private BOUNDS VerseBounds;
         public string Watermark
         {
             get
@@ -44,8 +50,6 @@ namespace AppUI
             }
         }
         private string szWatermark = "";
-        private bool hashTagOpeningState = false, hashTagClosingState = false;
-        public delegate void MyDelegate(string szText, string szHyperlink, int position);
         static public FontFamily[] ffInstalledFonts = null;
         #endregion
         
@@ -65,77 +69,63 @@ namespace AppUI
             Multiline = true;
             KeyUp += EhKeyUp;
             WordWrap = true;
+
+            InitialiseBounds();
         }
-
-        private string FxnGetLastTypedWord(int iSelectionStart, char delimiter)
+        private void InitialiseBounds()
         {
-            Select(iSelectionStart, 1);
-            SelectedText = "";
-            int wordEndPosition = iSelectionStart;
-            int currentPosition = wordEndPosition;
-
-            while (currentPosition > 0 && Text[currentPosition - 1] != delimiter)
-            {
-                currentPosition--;
-            }
-            if ((wordEndPosition - currentPosition) < 2)
-            {
-                return null;
-            }
-            string foundText = Text.Substring(currentPosition, wordEndPosition - currentPosition);
-            //Just to check an error
-            try
-            {
-                Select(currentPosition - 1, (wordEndPosition - currentPosition) + 1);//currentPosition - 1 to include the preceding tilde
-                SelectedRtf = "";
-                SelectionStart = currentPosition - 1;
-            }
-            catch
-            {
-                SelectionStart = wordEndPosition;
-            }
-            return foundText;
+            VerseBounds.bound1 = VerseBounds.bound2 = -1;
         }
-        private void FxnGetVerse(string szVerse, int position)
+        private void RestoreText(string textToRestore, int position)
         {
-            List<XMLBible.BIBLETEXTINFO> list = XMLBible.ReadXMLBible(szVerse);
+            SelectionStart = position;
+            SelectedText = textToRestore;
+            Select(position + textToRestore.Length, 0);
+        }
+        private string DeleteRTBText(int start, int end)
+        {
+            Select(start, end - start);
+            string originalRTF = SelectedRtf;
+            SelectedRtf = string.Empty;
+            SelectionStart = start;
 
-            if (list.Count != 0 || list != null)
+            return originalRTF;
+        }
+        private void GetVerse(string boundedText, int boundStart, int boundEnd)
+        {
+            // NB: The boundedText contains both bounding tildes
+            DeleteRTBText(boundStart, boundEnd);
+
+            string parseString = boundedText.Replace("~", string.Empty);
+            List<XMLBible.BIBLETEXTINFO> list = XMLBible.ParseStringToVerse(parseString);
+
+            if (list != null && list.Count != 0)
             {
                 for (int i = 0; i < list.Count; i++)
                 {
                     XMLBible.BIBLETEXTINFO BTI = list[i];
-                    MyDelegate myDelegate = new MyDelegate(FxnInsertLinks);
-                    try
+                    if (string.IsNullOrEmpty(BTI.bcv))
                     {
-                        if (i != (list.Count - 1))
+                        RestoreText(boundedText, boundStart);
+                    }
+                    else
+                    {
+                        if (i == (list.Count - 1))
                         {
-                            Invoke(myDelegate, BTI.bcv + "; ", BTI.verse, position);
+                            InsertLink(BTI.bcv, string.Empty, boundStart);
                         }
                         else
                         {
-                            Invoke(myDelegate, BTI.bcv, BTI.verse, position);
+                            InsertLink(BTI.bcv + "; ", string.Empty, boundStart);
                         }
-                    }
-                    catch (Exception exception)
-                    {
-                        MessageBox.Show(exception.ToString());
                     }
                 }
             }
-        }
-        private void FxnInsertLinks(string szText, string szHyperlink, int position)
-        {
-            try
+            else
             {
-                InsertLink(szText, szHyperlink, SelectionStart);
-            }
-            catch
-            {
-                InsertLink(szText, szHyperlink);
+                RestoreText(boundedText, boundStart);
             }
         }
-
 
         #region EventHandlers
         /* private void Enter(object sender, EventArgs e) && private void Leave(object sender, EventArgs e)
@@ -195,33 +185,84 @@ namespace AppUI
                 MessageBox.Show("In SermonReader, after link clicked: " + exception.Message);
             }
         }
+        private void SetVerseBounds()
+        {
+            if (VerseBounds.bound1 == -1)
+            {
+                VerseBounds.bound1 = SelectionStart;
+                VerseBounds.bound2 = -1;
+            }
+            else if (VerseBounds.bound2 == -1)
+            {
+                VerseBounds.bound2 = SelectionStart;
+            }
+        }
+        private string GetTextBetweenBounds(int bound1, int bound2)
+        {
+            try
+            {
+                if (Math.Abs(bound1 - bound2) > 1)
+                {
+                    if (VerseBounds.bound1 < VerseBounds.bound2)
+                    {
+                        return Text.Substring(VerseBounds.bound1, VerseBounds.bound2 - 1 - VerseBounds.bound1);
+                    }
+                    else
+                    {
+                        return Text.Substring(VerseBounds.bound2, VerseBounds.bound1 - 1 - VerseBounds.bound2);
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return null;
+            }
+        }
         private void EhKeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Oemtilde && e.Shift == true)
             {
-                hashTagClosingState = (hashTagOpeningState == true) ? true : false;
-                hashTagOpeningState = (hashTagOpeningState == false) ? true : false;
-                if (hashTagClosingState && !hashTagOpeningState)
+                SetVerseBounds();
+            }
+            if (VerseBounds.bound2 != -1 && VerseBounds.bound1 == 1)
+            {
+                InitialiseBounds();
+            }
+            if (VerseBounds.bound1 != -1 && VerseBounds.bound2 != -1)
+            {
+                if (Math.Abs(VerseBounds.bound1 - VerseBounds.bound2) > 1)
                 {
-                    string szVerse = FxnGetLastTypedWord(SelectionStart - 1, '~');//SelectionStart - 1 position before closing tilde
-                    if (szVerse == null)
+                    String verse = GetTextBetweenBounds(VerseBounds.bound1, VerseBounds.bound2);
+
+                    if (verse != null)
                     {
-                        MessageBox.Show("ERROR");
+                        Font prevFont = SelectionFont;//get initial font
+                        if (VerseBounds.bound1 < VerseBounds.bound2)
+                        {
+                            GetVerse(verse, VerseBounds.bound1 - 1, VerseBounds.bound2);
+                        }
+                        else
+                        {
+                            GetVerse(verse, VerseBounds.bound2 - 1, VerseBounds.bound1);
+                        }
+                        SelectionFont = prevFont;//revert to previous font
                     }
                     else
                     {
-                        Font prevFont = SelectionFont;//get initial font
-                        FxnGetVerse(szVerse, SelectionStart);
-                        SelectionFont = prevFont;//revert to previous font
+                        MessageBox.Show("ERROR");
                     }
                 }
+                InitialiseBounds();
             }
         }
         #endregion
 
-
-        #region Extended capabilities: copied from
-        //https://www.codeproject.com/articles/9196/links-with-arbitrary-text-in-a-richtextbox
+        
+        //Extended capabilities from: https://www.codeproject.com/articles/9196/links-with-arbitrary-text-in-a-richtextbox
 
         #region Interop-Defines
         [StructLayout(LayoutKind.Sequential)]
@@ -395,43 +436,11 @@ namespace AppUI
             sb.Append(text);
             sb.Append(@"\b0\b0");
 
+            SelectionStart = position;
             SelectedRtf = sb.ToString();
-            SetSelectionLink(true);
-            //SelectionStart = position;
-            //SelectedRtf = sb.ToString();
-            #region
-            //int x = 0;
-            //while(x < Text.Length)
-            //{
-            //    if (Text[x] == '.')
-            //    {
-            //        if(char.IsLetter(Text[x-1]) && char.IsDigit(Text[x + 1]))
-            //        {
-            //            int y = x; string verse = "";
-            //            while (!char.IsWhiteSpace(Text[y]))
-            //            {
-            //                --y;
-            //            }
-            //            ++y;
-            //            try
-            //            {
-            //                while (!char.IsWhiteSpace(Text[y]))
-            //                {
-            //                    verse += Text[y];
-            //                    ++y;
-            //                }
-            //            }
-            //            catch
-            //            {
-            //                Select(Text.IndexOf(verse), verse.Length);
-            //                SetSelectionLink(true);
-            //                Select(Text.IndexOf(verse) + verse.Length, 0);
-            //            }
-            //        }
-            //    }
-            //    ++x;
-            //}
-            #endregion
+            //Select(position, sb.Length);
+            //SetSelectionLink(true);
+            SelectionStart = position + sb.Length;
         }
 
         /// <summary>
@@ -499,7 +508,6 @@ namespace AppUI
             return state;
         }
         
-        #endregion
 
 
         #region BORROWED CODE FROM MSDN
@@ -603,3 +611,34 @@ namespace AppUI
         }
     }
 }
+
+/*
+private string FxnGetLastTypedWord(int iSelectionStart, char delimiter)
+{
+    Select(iSelectionStart, 1);
+    SelectedText = "";
+    int wordEndPosition = iSelectionStart;
+    int currentPosition = wordEndPosition;
+
+    while (currentPosition > 0 && Text[currentPosition - 1] != delimiter)
+    {
+        currentPosition--;
+    }
+    if ((wordEndPosition - currentPosition) < 2)
+    {
+        return null;
+    }
+    string foundText = Text.Substring(currentPosition, wordEndPosition - currentPosition);
+    //Just to check an error
+    try
+    {
+        Select(currentPosition - 1, (wordEndPosition - currentPosition) + 1);//currentPosition - 1 to include the preceding tilde
+        SelectedRtf = "";
+        SelectionStart = currentPosition - 1;
+    }
+    catch
+    {
+        SelectionStart = wordEndPosition;
+    }
+    return foundText;
+}*/
