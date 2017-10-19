@@ -103,11 +103,9 @@ namespace AppEngine
                     {
                         BCVSTRUCT START = listOfBCVRanges[i].Start;
                         BCVSTRUCT END = listOfBCVRanges[i].End;
-                        //string VERSE = GetVerseText(ref START, ref END);
                         BIBLETEXTINFO bibleTextInfo = new BIBLETEXTINFO()
                         {
-                            //bibleTextInfo.verse = VERSE;
-                            verse = ""
+                            verse = string.Empty
                         };
 
                         //Update bcv to be displayed
@@ -123,10 +121,16 @@ namespace AppEngine
                         }
                         //end of update
                     }
-                    catch {; }
+                    catch
+                    {
+                        return null;
+                    }
                 }
             }
-            else {; }
+            else
+            {
+                return null;
+            }
 
             return list;
         }
