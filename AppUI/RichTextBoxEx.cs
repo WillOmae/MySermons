@@ -93,37 +93,86 @@ namespace AppUI
         }
         private void GetVerse(string boundedText, int boundStart, int boundEnd)
         {
+            //boundStart must be less than boundEnd
+            if (boundStart > boundEnd)
+            {
+                GetVerse(boundedText, boundEnd, boundStart + 1);// +1 for some reason!
+                return;
+            }
+            if ((boundEnd - boundStart) <= 3)
+            {
+                return;
+            }
             // NB: The boundedText contains both bounding tildes
-            DeleteRTBText(boundStart, boundEnd);
+            boundStart--;//for some reason
 
             string parseString = boundedText.Replace("~", string.Empty);
             List<XMLBible.BIBLETEXTINFO> list = XMLBible.ParseStringToVerse(parseString);
 
             if (list != null && list.Count != 0)
             {
+                string concatBCV = string.Empty;
                 for (int i = 0; i < list.Count; i++)
                 {
-                    XMLBible.BIBLETEXTINFO BTI = list[i];
-                    if (string.IsNullOrEmpty(BTI.bcv))
-                    {
-                        RestoreText(boundedText, boundStart);
-                    }
-                    else
+                    if (!string.IsNullOrEmpty(list[i].bcv))
                     {
                         if (i == (list.Count - 1))
                         {
-                            InsertLink(BTI.bcv, string.Empty, boundStart);
+                            concatBCV += list[i].bcv;
                         }
                         else
                         {
-                            InsertLink(BTI.bcv + "; ", string.Empty, boundStart);
+                            concatBCV += list[i].bcv + "; ";
                         }
                     }
                 }
+                DeleteRTBText(boundStart, boundEnd);
+                InsertVerse(concatBCV, string.Empty, boundStart);
+            }
+        }
+        public void InsertVerse(string text, string hyperlink, int position)
+        {
+            if (position < 0 || position > Text.Length)
+                return;
+
+            var sb = new StringBuilder();
+            sb.Append(@"{\rtf1\ansi");
+            sb.Append(@"\b ");
+            sb.Append(text);
+            sb.Append(@"\b0\b0");
+
+            SelectionStart = position;
+            SelectedRtf = sb.ToString();
+            SelectionStart = position + sb.Length;
+        }
+        private void SetVerseBounds()
+        {
+            if (VerseBounds.bound1 == -1)
+            {
+                VerseBounds.bound1 = SelectionStart;
+                VerseBounds.bound2 = -1;
+            }
+            else if (VerseBounds.bound2 == -1)
+            {
+                VerseBounds.bound2 = SelectionStart;
+            }
+        }
+        private string GetTextBetweenBounds(int bound1, int bound2)
+        {
+            if (bound1 > bound2)
+            {
+                return GetTextBetweenBounds(bound2, bound1 + 1);// +1 for some reason!
             }
             else
             {
-                RestoreText(boundedText, boundStart);
+                try
+                {
+                    return Text.Substring(bound1, bound2 - 1 - bound1);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    return null;
+                }
             }
         }
 
@@ -185,70 +234,23 @@ namespace AppUI
                 MessageBox.Show("In SermonReader, after link clicked: " + exception.Message);
             }
         }
-        private void SetVerseBounds()
-        {
-            if (VerseBounds.bound1 == -1)
-            {
-                VerseBounds.bound1 = SelectionStart;
-                VerseBounds.bound2 = -1;
-            }
-            else if (VerseBounds.bound2 == -1)
-            {
-                VerseBounds.bound2 = SelectionStart;
-            }
-        }
-        private string GetTextBetweenBounds(int bound1, int bound2)
-        {
-            try
-            {
-                if (Math.Abs(bound1 - bound2) > 1)
-                {
-                    if (VerseBounds.bound1 < VerseBounds.bound2)
-                    {
-                        return Text.Substring(VerseBounds.bound1, VerseBounds.bound2 - 1 - VerseBounds.bound1);
-                    }
-                    else
-                    {
-                        return Text.Substring(VerseBounds.bound2, VerseBounds.bound1 - 1 - VerseBounds.bound2);
-                    }
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                return null;
-            }
-        }
         private void EhKeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Oemtilde && e.Shift == true)
             {
                 SetVerseBounds();
             }
-            if (VerseBounds.bound2 != -1 && VerseBounds.bound1 == 1)
-            {
-                InitialiseBounds();
-            }
+
             if (VerseBounds.bound1 != -1 && VerseBounds.bound2 != -1)
             {
-                if (Math.Abs(VerseBounds.bound1 - VerseBounds.bound2) > 1)
+                if (Math.Abs(VerseBounds.bound2 - VerseBounds.bound1) > 1)
                 {
                     String verse = GetTextBetweenBounds(VerseBounds.bound1, VerseBounds.bound2);
 
                     if (verse != null)
                     {
                         Font prevFont = SelectionFont;//get initial font
-                        if (VerseBounds.bound1 < VerseBounds.bound2)
-                        {
-                            GetVerse(verse, VerseBounds.bound1 - 1, VerseBounds.bound2);
-                        }
-                        else
-                        {
-                            GetVerse(verse, VerseBounds.bound2 - 1, VerseBounds.bound1);
-                        }
+                        GetVerse(verse, VerseBounds.bound1, VerseBounds.bound2);
                         SelectionFont = prevFont;//revert to previous font
                     }
                     else
@@ -262,7 +264,7 @@ namespace AppUI
         #endregion
 
         
-        //Extended capabilities from: https://www.codeproject.com/articles/9196/links-with-arbitrary-text-in-a-richtextbox
+        //Extended capabilities from https://www.codeproject.com/articles/9196/links-with-arbitrary-text-in-a-richtextbox
 
         #region Interop-Defines
         [StructLayout(LayoutKind.Sequential)]
