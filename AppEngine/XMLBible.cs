@@ -3,7 +3,6 @@
  * XMLBible
  * This is a class that handles various operations on an XML Bible
  */
-using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -73,8 +72,37 @@ namespace AppEngine
             }
         }
 
-        static private readonly char blockSeparator = ';', inblockSeparator = ',', rangeSeparator = '-', cvSeparator = ':';
-        
+        private const char blockSeparator = ';', inblockSeparator = ',', rangeSeparator = '-', cvSeparator = ':';
+
+        /// <summary>
+        /// Single chapter e.g. Hebrews 1
+        /// </summary>
+        private const string regexBC = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}";
+        /// <summary>
+        /// Single verse e.g. Hebrews 11:1
+        /// </summary>
+        private const string regexBCV = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*:\s*\d{1,3}";
+        /// <summary>
+        /// Range of verses within a chapter e.g. Psalms 119:105 - 150
+        /// </summary>
+        private const string regexBCVrV = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*:\s*\d{1,3}\s*-\s*\d{1,3}";
+        /// <summary>
+        /// Range of chapters within the same book e.g. 1John 1 - 3
+        /// </summary>
+        private const string regexBCrC = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*-\s*\d{1,3}";
+        /// <summary>
+        /// Range of verses across chapters of the same book e.g. Revelation 20:10 - 21:10
+        /// </summary>
+        private const string regexBCVrCV = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*:\s*\d{1,3}-\s*\d{1,3}\s*:\s*\d{1,3}";
+        /// <summary>
+        /// Range of chapters across books e.g. 2John 1 - 3John 1
+        /// </summary>
+        private const string regexBCrBC = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*-\d?\s*[a-zA-Z]{1,}\s*\d{1,3}";
+        /// <summary>
+        /// Range of verses across chapters across books e.g. 2John 1:1 - 3John 1:3
+        /// </summary>
+        private const string regexBCVrBCV = @"\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*:\s*\d{1,3}-\d?\s*[a-zA-Z]{1,}\s*\d{1,3}\s*:\s*\d{1,3}";
+
         /// <summary>
         /// Loads the XML file into memory.
         /// </summary>
@@ -292,125 +320,93 @@ namespace AppEngine
                 Chapter = null,
                 Verse = null
             };
-            int index = 0;
-            bool foundChapter = false, foundCVSeparator = false;
-            foreach (char c in stringToParse)
-            {
-                if (char.IsDigit(c) == true && index == 0)
-                {
-                    bibleText_Start.Book += c;
-                }
-                else if (char.IsLetter(c) == true)
-                {
-                    bibleText_Start.Book += c;
-                }
-                else if (char.IsDigit(c) == true && foundChapter == false)
-                {
-                    bibleText_Start.Chapter += c;
-                }
-                else if (char.IsPunctuation(c) == true && c == cvSeparator)
-                {
-                    foundChapter = true;
-                    foundCVSeparator = true;
-                }
-                else if (char.IsDigit(c) == true)
-                {
-                    bibleText_Start.Verse += c;
-                }
-                else if (char.IsPunctuation(c) == true && c == rangeSeparator)//get the end BCVstruct
-                {
-                    //sample ~Heb13-Jas1~
-                    if (foundCVSeparator)
-                    {
-                        GetEnd(stringToParse.Remove(0, stringToParse.IndexOf(c) + 1), bibleText_Start, ref bibleText_End);
-                    }
-                    else
-                    {
-                        bibleText_Start.Verse = "1";
-                        string pass = stringToParse.Remove(0, stringToParse.IndexOf(c) + 1);
-                        int firstDigitIndex = 0;
-                        for (int i = 0; i < pass.Length; i++)
-                        {
-                            char x = pass[i];
-                            if (char.IsDigit(x))
-                            {
-                                try
-                                {
-                                    if (!char.IsLetter(pass[i + 1]))
-                                    {
-                                        firstDigitIndex = pass.IndexOf(x);
-                                        break;
-                                    }
-                                }
-                                catch
-                                {
-                                    firstDigitIndex = pass.IndexOf(x);
-                                }
-                            }
-                        }
-                        string book = pass.Remove(firstDigitIndex), chapter = pass.Remove(0, firstDigitIndex);
-                        book = ConfirmBibleBookName(book);
-                        pass = book + chapter + ":" + VerseCount(book, chapter);
+            addedVerse = false;
 
-                        GetEnd(pass, bibleText_Start, ref bibleText_End);
-                    }
-                    break;
-                }
-                index++;
-            }
-
-            if (bibleText_Start.Book != null)
+            if (new Regex(regexBCVrBCV).IsMatch(stringToParse))
             {
-                //Confirm the existence of this book
+                int separatorIndex = stringToParse.IndexOf(rangeSeparator);
+                string start = stringToParse.Remove(separatorIndex);
+                bibleText_Start = StringToBCV(start);
                 bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
-                //Reconfirm the existence of this book
-                if (bibleText_Start.Book != null)
-                {
-                    //No verse stated, no range given e.g. ~james1~
-                    if (bibleText_Start.Verse == null && bibleText_End.Book == null)
-                    {
-                        bibleText_Start.Verse = "1";
-                        bibleText_End.Book = bibleText_Start.Book;
-                        bibleText_End.Chapter = bibleText_Start.Chapter;
-                        bibleText_End.Verse = VerseCount(bibleText_End.Book, bibleText_End.Chapter).ToString();
-                        addedVerse = true;//***********NOTE
-                    }
-                    else
-                    {
-                        addedVerse = false;//***********NOTE
-                    }
-                    bibleText_Start.bcv = bibleText_Start.Book.ToUpper() + "." + bibleText_Start.Chapter + "." + bibleText_Start.Verse;//generate bcv
-                }
-                else
-                {
-                    addedVerse = false;
-                }
+
+                string end = stringToParse.Substring(separatorIndex + 1);
+                bibleText_End = StringToBCV(end);
+                bibleText_End.Book = ConfirmBibleBookName(bibleText_End.Book);
             }
-            else
+            else if (new Regex(regexBCrBC).IsMatch(stringToParse))
             {
-                bibleText_Start.Book = null;
-                bibleText_Start.bcv = null;
-                addedVerse = false;//***********NOTE
+                int separatorIndex = stringToParse.IndexOf(rangeSeparator);
+                string start = stringToParse.Remove(separatorIndex);
+                bibleText_Start = StringToBCV(start);
+                bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
+                bibleText_Start.Verse = "1";
+                addedVerse = true;
+
+                string end = stringToParse.Substring(separatorIndex + 1);
+                bibleText_End = StringToBCV(end);
+                bibleText_End.Book = ConfirmBibleBookName(bibleText_End.Book);
+                bibleText_End.Verse = VerseCount(bibleText_End.Book, bibleText_End.Chapter).ToString();
             }
-            if (bibleText_End.Book != null)
+            else if (new Regex(regexBCVrCV).IsMatch(stringToParse))
             {
-                bibleText_End.Book = ConfirmBibleBookName(bibleText_End.Book);//Confirm the existence of this book
-                if (bibleText_End.Book != null)
-                {
-                    bibleText_End.bcv = bibleText_End.Book.ToUpper() + "." + bibleText_End.Chapter + "." + bibleText_End.Verse;//generate bcv
-                }
+                int separatorIndex = stringToParse.IndexOf(rangeSeparator);
+                string start = stringToParse.Remove(separatorIndex);
+                bibleText_Start = StringToBCV(start);
+                bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
+
+                string end = bibleText_Start.Book + stringToParse.Substring(separatorIndex + 1);
+                bibleText_End = StringToBCV(end);
+                bibleText_End.Book = ConfirmBibleBookName(bibleText_End.Book);
             }
-            else
+            else if (new Regex(regexBCrC).IsMatch(stringToParse))
             {
-                bibleText_End.Book = null;
-                bibleText_End.bcv = null;
+                int separatorIndex = stringToParse.IndexOf(rangeSeparator);
+                string start = stringToParse.Remove(separatorIndex);
+                bibleText_Start = StringToBCV(start);
+                bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
+                bibleText_Start.Verse = "1";
+                addedVerse = true;
+
+                string end = bibleText_Start.Book + stringToParse.Substring(separatorIndex + 1);
+                bibleText_End = StringToBCV(end);
+                bibleText_End.Book = ConfirmBibleBookName(bibleText_End.Book);
+                bibleText_End.Verse = VerseCount(bibleText_End.Book, bibleText_End.Chapter).ToString();
             }
-            BCVRANGE BTG = new BCVRANGE()
+            else if (new Regex(regexBCVrV).IsMatch(stringToParse))
+            {
+                int separatorIndex = stringToParse.IndexOf(rangeSeparator);
+                string start = stringToParse.Remove(separatorIndex);
+                bibleText_Start = StringToBCV(start);
+                bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
+
+                string end = bibleText_Start.Book + bibleText_Start.Chapter + cvSeparator + stringToParse.Substring(separatorIndex + 1);
+                bibleText_End = StringToBCV(end);
+                bibleText_End.Book = ConfirmBibleBookName(bibleText_End.Book);
+            }
+            else if (new Regex(regexBCV).IsMatch(stringToParse))
+            {
+                bibleText_Start = StringToBCV(stringToParse);
+                bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
+            }
+            else if (new Regex(regexBC).IsMatch(stringToParse))
+            {
+                bibleText_Start = StringToBCV(stringToParse);
+                bibleText_Start.Book = ConfirmBibleBookName(bibleText_Start.Book);
+                bibleText_Start.Verse = "1";
+
+                bibleText_End.Book = bibleText_Start.Book;
+                bibleText_End.Chapter = bibleText_Start.Chapter;
+                bibleText_End.Verse = VerseCount(bibleText_End.Book, bibleText_End.Chapter).ToString();
+            }
+            bibleText_Start.bcv = GenerateBCVString(bibleText_Start);
+            bibleText_End.bcv = GenerateBCVString(bibleText_End);
+
+            BCVRANGE range = new BCVRANGE()
             {
                 Start = bibleText_Start,
                 End = bibleText_End
             };
-            listOfBCVRanges.Add(BTG);
+            listOfBCVRanges.Add(range);
 
             if (bibleText_End.Book != null)
             {
@@ -490,99 +486,166 @@ namespace AppEngine
             }
         }
         /// <summary>
+        /// Parses a string e.g. 1John1:1 and extracts the book, chapter and verse
+        /// </summary>
+        /// <param name="input">The string to parse.</param>
+        /// <returns>BCVStruct containing the separate components.</returns>
+        private static BCVSTRUCT StringToBCV(string input)
+        {
+            BCVSTRUCT bcv;
+            bcv.Book = bcv.Chapter = bcv.Verse = bcv.bcv = string.Empty;
+            bool cvSeparatorFound = false;
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                char c = input[i];
+                if (c == cvSeparator)
+                {
+                    cvSeparatorFound = true;
+                }
+                else if (char.IsLetter(c))
+                {
+                    bcv.Book += c;
+                }
+                else if (char.IsDigit(c))
+                {
+                    if (i == 0)
+                    {
+                        bcv.Book += c;
+                    }
+                    else
+                    {
+                        if (cvSeparatorFound)
+                        {
+                            bcv.Verse += c;
+                        }
+                        else
+                        {
+                            bcv.Chapter += c;
+                        }
+                    }
+                }
+            }
+            return bcv;
+        }
+        /// <summary>
+        /// Concatenates book, chapter and verse to form a single BCV.
+        /// </summary>
+        /// <param name="input">The BCVStruct.</param>
+        /// <returns>bcv</returns>
+        private static string GenerateBCVString(BCVSTRUCT input)
+        {
+            if (!string.IsNullOrEmpty(input.Book))
+            {
+                if (!string.IsNullOrEmpty(input.Chapter))
+                {
+                    if (!string.IsNullOrEmpty(input.Verse))
+                    {
+                        return input.Book.ToUpper() + "." + input.Chapter + "." + input.Verse;
+                    }
+                }
+            }
+            return null;
+        }
+        /// <summary>
         /// Assertains the presence of the Bible book in the search string passed to it.
         /// </summary>
         /// <param name="search">String containing the book to be confirmed.</param>
         /// <returns></returns>
         private static string ConfirmBibleBookName(string search)
         {
-            string szBookName = null;
+            string bookName = null;
 
-            try
+            if (!string.IsNullOrEmpty(search))
             {
-
-                /* Best search:
-                 * Entire search string occurs as it is i.e.
-                    searchedString == searchString
-                 */
-                foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
+                try
                 {
-                    if (XMLElement.Attributes["abbr"].Value.ToLower() == search.ToLower())
-                    {
-                        szBookName = XMLElement.Attributes["c"].Value;
-                        break;
-                    }
-                    else if (XMLElement.Attributes["short"].Value.ToLower() == search.ToLower())
-                    {
-                        szBookName = XMLElement.Attributes["c"].Value;
-                        break;
-                    }
-                }
-                /* 2nd best search:
-                 * First letter match
-                 * searchedString contains the searchString in order i.e.
-                    searchedString == searchStringxyzabc
-                 */
-                if (szBookName == null)
-                {
+                    /* Best search:
+                     * Entire search string occurs as it is i.e.
+                        searchedString == searchString
+                     */
                     foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
                     {
-                        if (StringSearch.AllExist_InOrder(XMLElement.Attributes["abbr"].Value.ToLower(), search.ToLower())
-                            && XMLElement.Attributes["abbr"].Value.ToLower()[0] == search.ToLower()[0])
+                        if (XMLElement.Attributes["abbr"].Value.ToLower() == search.ToLower())
                         {
-                            szBookName = XMLElement.Attributes["c"].Value;
+                            bookName = XMLElement.Attributes["c"].Value;
                             break;
                         }
-                        else if (StringSearch.AllExist_InOrder(XMLElement.Attributes["short"].Value.ToLower(), search.ToLower())
-                            && XMLElement.Attributes["short"].Value.ToLower()[0] == search.ToLower()[0])
+                        else if (XMLElement.Attributes["short"].Value.ToLower() == search.ToLower())
                         {
-                            szBookName = XMLElement.Attributes["c"].Value;
+                            bookName = XMLElement.Attributes["c"].Value;
                             break;
+                        }
+                    }
+                    /* 2nd best search:
+                     * First letter match
+                     * searchedString contains the searchString in order i.e.
+                        searchedString == searchStringxyzabc
+                     */
+                    if (bookName == null)
+                    {
+                        foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
+                        {
+                            if (StringSearch.AllExist_InOrder(XMLElement.Attributes["abbr"].Value.ToLower(), search.ToLower())
+                                && XMLElement.Attributes["abbr"].Value.ToLower()[0] == search.ToLower()[0])
+                            {
+                                bookName = XMLElement.Attributes["c"].Value;
+                                break;
+                            }
+                            else if (StringSearch.AllExist_InOrder(XMLElement.Attributes["short"].Value.ToLower(), search.ToLower())
+                                && XMLElement.Attributes["short"].Value.ToLower()[0] == search.ToLower()[0])
+                            {
+                                bookName = XMLElement.Attributes["c"].Value;
+                                break;
+                            }
+                        }
+                    }
+                    /* 3rd best search:
+                     * searchedString contains the searchString in order i.e.
+                        searchedString == abcsearchStringxyz
+                     */
+                    if (bookName == null)
+                    {
+                        foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
+                        {
+                            if (StringSearch.AllExist_InOrder(XMLElement.Attributes["abbr"].Value.ToLower(), search.ToLower()))
+                            {
+                                bookName = XMLElement.Attributes["c"].Value;
+                                break;
+                            }
+                            else if (StringSearch.AllExist_InOrder(XMLElement.Attributes["short"].Value.ToLower(), search.ToLower()))
+                            {
+                                bookName = XMLElement.Attributes["c"].Value;
+                                break;
+                            }
+                        }
+                    }
+                    /* Worst search
+                     * searchedString contains the searchString in whichever order of occurrence of letters
+                     */
+                    if (bookName == null)
+                    {
+                        foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
+                        {
+                            if (StringSearch.AllExist(XMLElement.Attributes["abbr"].Value.ToLower(), search.ToLower()))
+                            {
+                                bookName = XMLElement.Attributes["c"].Value;
+                                break;
+                            }
+                            else if (StringSearch.AllExist(XMLElement.Attributes["short"].Value.ToLower(), search.ToLower()))
+                            {
+                                bookName = XMLElement.Attributes["c"].Value;
+                                break;
+                            }
                         }
                     }
                 }
-                /* 3rd best search:
-                 * searchedString contains the searchString in order i.e.
-                    searchedString == abcsearchStringxyz
-                 */
-                if (szBookName == null)
+                catch
                 {
-                    foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
-                    {
-                        if (StringSearch.AllExist_InOrder(XMLElement.Attributes["abbr"].Value.ToLower(), search.ToLower()))
-                        {
-                            szBookName = XMLElement.Attributes["c"].Value;
-                            break;
-                        }
-                        else if (StringSearch.AllExist_InOrder(XMLElement.Attributes["short"].Value.ToLower(), search.ToLower()))
-                        {
-                            szBookName = XMLElement.Attributes["c"].Value;
-                            break;
-                        }
-                    }
-                }
-                /* Worst search
-                 * searchedString contains the searchString in whichever order of occurrence of letters
-                 */
-                if (szBookName == null)
-                {
-                    foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
-                    {
-                        if (StringSearch.AllExist(XMLElement.Attributes["abbr"].Value.ToLower(), search.ToLower()))
-                        {
-                            szBookName = XMLElement.Attributes["c"].Value;
-                            break;
-                        }
-                        else if (StringSearch.AllExist(XMLElement.Attributes["short"].Value.ToLower(), search.ToLower()))
-                        {
-                            szBookName = XMLElement.Attributes["c"].Value;
-                            break;
-                        }
-                    }
+                    bookName = null;
                 }
             }
-            catch{ }
-            return szBookName;//if book was not found, null is returned.
+            return bookName;//if book was not found, null is returned.
         }
 
         /// <summary>
@@ -839,7 +902,7 @@ namespace AppEngine
                 end.Verse = startString.Remove(0, startString.LastIndexOf(".") + 1);
 
                 startString = stringToParse.Remove(iPosRange);
-                
+
                 return start.bcv + "-" + end.bcv;
             }
             else
