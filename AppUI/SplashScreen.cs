@@ -1,5 +1,4 @@
 ﻿using AppEngine;
-using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,23 +6,12 @@ namespace AppUI
 {
     public class SplashScreen : Form
     {
-        private ParentForm parentForm;
-        public bool hasClosedSplashScreen = false;
-
-
         private Label lbl1 = new Label();
         private Label lbl2 = new Label();
 
-        public SplashScreen(ParentForm parent)
+        public SplashScreen()
         {
-            parentForm = parent;
-            BackgroundWorker worker = new BackgroundWorker()
-            {
-                WorkerReportsProgress = true,
-                WorkerSupportsCancellation = true
-            };
-            worker.DoWork += delegate { ShowSplashScreen(); };
-            worker.RunWorkerAsync();
+            ShowSplashScreen();
         }
         private void ShowSplashScreen()
         {
@@ -41,22 +29,10 @@ namespace AppUI
 
             Size = new Size(currentScreen.WorkingArea.Height * 3 / 4, currentScreen.WorkingArea.Height * 1 / 2);
             AddControls(Size, this);
-            Update();
 
             Show();
             Update();
             FadeIn();
-
-            while (parentForm.ShowInTaskbar == false)
-            {
-                if (parentForm.canExitSplashScreen == true)
-                {
-                    if (this != null)
-                    {
-                        Close();
-                    }
-                }
-            }
         }
         private void AddControls(Size size, SplashScreen parent)
         {
@@ -66,7 +42,7 @@ namespace AppUI
                 Font = new Font("Magneto", 18, FontStyle.Underline, GraphicsUnit.Point);
 
                 lbl1.Name = "lbl1";
-                lbl1.Text = parentForm.szAppName;
+                lbl1.Text = Properties.Resources.AppName;
                 lbl1.Font = new Font("Magneto", Font.Size, FontStyle.Underline, GraphicsUnit.Millimeter);
                 stringSize = g.MeasureString(lbl1.Text, lbl1.Font);
                 lbl1.Width = this.Width;
@@ -94,7 +70,6 @@ namespace AppUI
         private void EhClosing(object sender, FormClosingEventArgs e)
         {
             FadeOut();
-            hasClosedSplashScreen = true;
         }
         private void FadeIn()
         {

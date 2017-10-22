@@ -1,5 +1,6 @@
 ﻿using AppEngine;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -8,6 +9,8 @@ namespace AppUI
     public class ParentForm : Form
     {
         #region ****************** GLOBAL VARIABLES AND STRUCT DEFINITIONS ******************
+        delegate void invokeControl();
+
         public SplashScreen splashScreen = null;
         static public StartPageForm startPage;
 
@@ -81,7 +84,6 @@ namespace AppUI
         }
         public string szAppName = Properties.Resources.AppName;
         static public string[] availableDocTypes = new string[] { "Sermon" };
-        public bool canExitSplashScreen = false;
 
         public TabControl tabControl;
         public MenuStrip menuStrip;
@@ -96,7 +98,7 @@ namespace AppUI
         public ToolStripMenuItem menuItemHelp, menuItemHelp_About, menuItemHelp_Update;
         public ToolStripSeparator menuItemSeparator;
         #endregion
-        
+
         /// <summary>
         /// Initialises a new instance of the ParentForm class.
         /// </summary>
@@ -106,88 +108,98 @@ namespace AppUI
             {
                 MainThread.CheckDBExistence();
                 Preferences.SetPreferences();
-                //Aid in splashScreen display
-                ShowInTaskbar = false;
-                WindowState = FormWindowState.Minimized;
-                //
+
+                BackgroundWorker bw = new BackgroundWorker()
+                {
+                    WorkerReportsProgress = true,
+                    WorkerSupportsCancellation = true
+                };
+                bw.DoWork += delegate { BackgroundWorkerRunProcess(bw); };
+                bw.RunWorkerCompleted += delegate { BackgroundWorkerCompletedProcess(); };
+
+                bw.RunWorkerAsync();
+
                 if (splashScreen == null)
                 {
-                    splashScreen = new SplashScreen(this);
+                    splashScreen = new SplashScreen();
                 }
-
-                WindowInteropHelper helper = new WindowInteropHelper(this);
-                Screen currentScreen = Screen.FromHandle(helper.Handle);
-
-                Shown += new EventHandler(ParentForm_Shown);
-                Load += new EventHandler(ParentForm_Load);
-                FormClosing += new FormClosingEventHandler(OnFormClosing);
-                Resize += delegate { UpdateControlSizes(); };
-
-                Text = szAppName;
-                
-                iDesktopWorkingWidth = currentScreen.WorkingArea.Width;
-                iDesktopWorkingHeight = currentScreen.WorkingArea.Height;
-
-                Size size = new Size(iDesktopWorkingWidth, iDesktopWorkingHeight);
-
-                InitialiseForm(size);
-                
-                foreach (Control control in Controls)
-                {
-                    UpdateControlColorsFonts(control, ControlColour, ColourFont, SystemFont);
-                }
-                UpdateControlSizes();
-                try { treeviewAvailableDocs.SortTreeView(TreeViewEx.FILTER); }
-                catch {; }
-
-                SermonReader.parentForm = this;
-                StatusBarMessages.statusLabelAction = statusLabelAction;
-                StatusBarMessages.statusLabelShowing = statusLabelShowing;
-                StatusBarMessages.statusLabelUpdates = statusLabelUpdates;
             }
             catch (Exception e)
             {
                 MessageBox.Show("An error was encountered while trying to load the application. Re-run the application.\nIf the error persists, reinstall the application. See error details below:\n\n\n" + e.ToString());
-                Close();
+                try
+                {
+                    Close();
+                }
+                catch (Exception exception)
+                {
+
+                }
             }
         }
-        
-        /// <summary>
-        ///     Occurs before the form is displayed for the first time.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ParentForm_Load(object sender, EventArgs e)
+        private void BackgroundWorkerRunProcess(BackgroundWorker bw)
         {
+            ShowInTaskbar = false;
+            WindowState = FormWindowState.Minimized;
+
             MainThread.InitialChecks();
             XMLBible.LoadBibleIntoMemory();
+
+            WindowInteropHelper helper = new WindowInteropHelper(this);
+            Screen currentScreen = Screen.FromHandle(helper.Handle);
+
+            Shown += delegate
+            {
+                if (Preferences.ShowWelcomeScreen)
+                {
+                    new WelcomeScreen().ShowDialog();
+                }
+            };
+            FormClosing += new FormClosingEventHandler(OnFormClosing);
+            Resize += delegate { UpdateControlSizes(); };
+
+            Text = szAppName;
+
+            iDesktopWorkingWidth = currentScreen.WorkingArea.Width;
+            iDesktopWorkingHeight = currentScreen.WorkingArea.Height;
+
+            Size size = new Size(iDesktopWorkingWidth, iDesktopWorkingHeight);
+
+            InitialiseForm(size);
+
+            foreach (Control control in Controls)
+            {
+                UpdateControlColorsFonts(control, ControlColour, ColourFont, SystemFont);
+            }
+
+            UpdateControlSizes();
+
+            try { treeviewAvailableDocs.SortTreeView(TreeViewEx.FILTER); }
+            catch {; }
+
+            SermonReader.parentForm = this;
+            StatusBarMessages.statusLabelAction = statusLabelAction;
+            StatusBarMessages.statusLabelShowing = statusLabelShowing;
+            StatusBarMessages.statusLabelUpdates = statusLabelUpdates;
+
+            startPage = new StartPageForm(this);
+            AddNewTabPage(startPage);
+            MainThread.CheckFileExistence();
         }
-        /// <summary>
-        ///     Occurs just after the form is first displayed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ParentForm_Shown(object sender, EventArgs e)
+        private void BackgroundWorkerCompletedProcess()
         {
-            SuspendLayout();
-            canExitSplashScreen = true;
-            while (splashScreen.hasClosedSplashScreen == false) {; }
+            try
+            {
+                splashScreen.Close();
+            }
+            catch (Exception exception)
+            {
+
+            }
 
             WindowState = FormWindowState.Normal;
             ShowInTaskbar = true;
             Cursor.Show();//it was hidden when the splashscreen was displayed
-
-            startPage = new StartPageForm(this);
-            AddNewTabPage(startPage);
-            ResumeLayout(true);
-
-            MainThread.CheckFileExistence();
-
-            if (Preferences.ShowWelcomeScreen)
-            {
-                WelcomeScreen welcomeScreen = new WelcomeScreen();
-                welcomeScreen.ShowDialog();
-            }
         }
         /// <summary>
         ///     Occurs when the form is just about to close.
@@ -666,7 +678,7 @@ namespace AppUI
             StatusBarMessages.SetStatusBarMessageShowing(tabControl.SelectedTab.Text);
             if (e.Control is TabPage tabPage)
             {
-                foreach(var c in tabPage.Name)
+                foreach (var c in tabPage.Name)
                 {
                     if (!char.IsDigit(c))
                     {
