@@ -184,8 +184,9 @@ namespace AppEngine
             }
 
             //create a string variable to hold one block to be passed to the next parsing function
-            string stringToPass = "";
+            string stringToPass = string.Empty;
 
+            //stringToParse.Split()
             for (int i = 0; i < stringToParse.Length; i++)
             {
                 if (stringToParse[i] == blockSeparator)
@@ -194,7 +195,7 @@ namespace AppEngine
                     {
                         ParseString1(stringToPass, ref listOfBCVRanges);
                     }
-                    stringToPass = "";//clear stringToPass to accommodate next string
+                    stringToPass = string.Empty;//clear stringToPass to accommodate next string
                 }
                 else
                 {

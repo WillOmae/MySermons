@@ -1,0 +1,18 @@
+MySermons - License agreement
+
+This Software is copyrighted.
+© 2017 - Wilbur Omae
+
+Please read this license agreement carefully. You may only use MySermons if you agree to the entire license agreement. 
+
+The Author - Wilbur Omae henceforth "Author" - of this Software grants you the right to use this software for your personal use. You can copy MySermons freely for personal use and share it, as long as you do not charge for it in any way. If you by any chance give out copies of MySermons to others, you must do it for free. You may not sell or resell this program or distribute it as a part of a commercial package or any other profit generating activity, even if the distribution is free.
+
+You may not host any software installation and/or executable files on your (or any other) website. You may not post any files or archives containing the Software itself or any other files related to the Software in any software repository, peer-to-peer network, or other file-sharing website or program.
+
+The origin of this Software must not be misrepresented. You must not claim that you wrote this Software. If you choose to redistribute the Software as part of another package you must contact the Author (dev.wilburomae@outlook.com) to obtain written permission.
+
+This Software is provided by the Author "as is". Any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the Author or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of, or inability to use, this Software, even if advised of the possibility of such damage.
+
+The Author reserves the right to make exceptions to any of these conditions, or alter these conditions, at any time.
+
+11th July 2017.
