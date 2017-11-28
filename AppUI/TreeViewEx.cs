@@ -347,7 +347,15 @@ namespace AppUI
         {
             if (SelectedNode.GetNodeCount(false) == 0)
             {
-                MyPrintDialog myPrintDialog = new MyPrintDialog(parentForm, SelectedNode.Name);
+                if (int.TryParse(SelectedNode.Name, out int documentId))
+                {
+                    MyPrintDialog myPrintDialog = new MyPrintDialog(parentForm, documentId);
+                }
+                else
+                {
+                    MessageBox.Show("Failed to print the selected document." +
+                        "\n\nFailed to resolve the document ID.");
+                }
             }
         }
         private void MenuItemRefresh_Click(object sender, EventArgs e)
@@ -444,6 +452,8 @@ namespace AppUI
                                 catch { }
 
                                 rtbSource.Rtf = rtf;
+
+                                rtbSource.Text += '\f';
                             }
                             catch
                             {

@@ -15,6 +15,8 @@ namespace AppUI
         static public ParentForm parentForm;
         private string[] SermonComponents;
 
+        private delegate void d_InsertLink(string linkText);
+
         public SermonReader(string rtf, string[] sermonComponents)
         {
             SermonComponents = sermonComponents;
@@ -180,6 +182,12 @@ namespace AppUI
         /// <param name="e"></param>
         private void FormShown(object sender, EventArgs e)
         {
+            string text = string.Empty;
+
+            textBox.Rtf = RTF;
+            text = textBox.Text;
+
+            d_InsertLink myDelegate = new d_InsertLink(InsertLink);
             LoadingForm loadingForm = new LoadingForm();
             BackgroundWorker bw = new BackgroundWorker()
             {
@@ -188,58 +196,51 @@ namespace AppUI
             };
             bw.DoWork += delegate
             {
-                textBox.StopRepaint();
-                textBox.Rtf = RTF;
-                var rangeMatches = Regex.Matches(textBox.Text, @"\b\w{3}\.\d{1,3}\.\d{1,3}\b\-\b\w{3}\.\d{1,3}\.\d{1,3}\b|\b\w{3}\.\d{1,3}\.\d{1,3}\b");
+                var rangeMatches = Regex.Matches(text, @"\b\w{3}\.\d{1,3}\.\d{1,3}\b\-\b\w{3}\.\d{1,3}\.\d{1,3}\b|\b\w{3}\.\d{1,3}\.\d{1,3}\b");
                 foreach (Match match in rangeMatches)
                 {
-                    InsertLink(match.Value);
+                    textBox.Invoke(myDelegate, match.Value);
                 }
-                BackToStart();
             };
             bw.RunWorkerCompleted += delegate
             {
+                BackToStart();
                 loadingForm.Close();
-                textBox.StartRepaint();
             };
             loadingForm.FormClosing += delegate
             {
                 if (bw!=null && bw.IsBusy)
                 {
                     bw.CancelAsync();
-                    textBox.StartRepaint();
                 }
             };
+
             bw.RunWorkerAsync();
             loadingForm.ShowDialog();
         }
-        
+
         private void InsertLink(string linkText)
         {
-            try
-            {
-                int iPos;
+            int iPos;
 
-                string stringToSplit = textBox.Text;
-                do
+            string stringToSplit = textBox.Text;
+            do
+            {
+                iPos = stringToSplit.IndexOf(linkText);
+                if (iPos >= stringToSplit.Length || iPos < 0)
                 {
-                    iPos = stringToSplit.IndexOf(linkText);
-                    if (iPos >= stringToSplit.Length || iPos < 0)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        //textBox.Select(iPos, linkText.Length);
-                        textBox.Select(textBox.Text.IndexOf(stringToSplit) + iPos, linkText.Length);
-                        textBox.SetSelectionLink(true);
-                        //textBox.Select(iPos + linkText.Length, 0);textBox.Text.IndexOf(stringToSplit) + iPos
-                        textBox.Select(textBox.Text.IndexOf(stringToSplit) + iPos + linkText.Length, 0);
-                        stringToSplit = textBox.Text.Remove(0, textBox.SelectionStart);
-                    }
-                } while (textBox.SelectionStart < (textBox.TextLength - 2));
-            }
-            catch { };
+                    break;
+                }
+                else
+                {
+                    //textBox.Select(iPos, linkText.Length);
+                    textBox.Select(textBox.Text.IndexOf(stringToSplit) + iPos, linkText.Length);
+                    textBox.SetSelectionLink(true);
+                    //textBox.Select(iPos + linkText.Length, 0);textBox.Text.IndexOf(stringToSplit) + iPos
+                    textBox.Select(textBox.Text.IndexOf(stringToSplit) + iPos + linkText.Length, 0);
+                    stringToSplit = textBox.Text.Remove(0, textBox.SelectionStart);
+                }
+            } while (textBox.SelectionStart < (textBox.TextLength - 2));
         }
         private void BackToStart()
         {

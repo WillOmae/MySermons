@@ -9,13 +9,13 @@ namespace AppUI
     public class ParentForm : Form
     {
         #region ****************** GLOBAL VARIABLES AND STRUCT DEFINITIONS ******************
-        delegate void invokeControl();
-
         public SplashScreen splashScreen = null;
         static public StartPageForm startPage;
 
         public int iDesktopWorkingWidth = 0;
         public int iDesktopWorkingHeight = 0;
+
+        public MainThread.CHECK_FILE_EXISTENCE_RESULTS check_file_existence_results;
 
         public Color ControlColour
         {
@@ -122,6 +122,46 @@ namespace AppUI
                 if (splashScreen == null)
                 {
                     splashScreen = new SplashScreen();
+                    ShowInTaskbar = false;
+                    WindowState = FormWindowState.Minimized;
+                    WindowInteropHelper helper = new WindowInteropHelper(this);
+                    Screen currentScreen = Screen.FromHandle(helper.Handle);
+
+                    Shown += delegate
+                    {
+                        if (Preferences.ShowWelcomeScreen)
+                        {
+                            new WelcomeScreen().ShowDialog();
+                        }
+                        AnalyseFileExistenceResults();
+                    };
+                    FormClosing += OnFormClosing;
+                    Resize += delegate { UpdateControlSizes(); };
+
+                    Text = szAppName;
+
+                    iDesktopWorkingWidth = currentScreen.WorkingArea.Width;
+                    iDesktopWorkingHeight = currentScreen.WorkingArea.Height;
+
+                    Size size = new Size(iDesktopWorkingWidth, iDesktopWorkingHeight);
+
+                    InitialiseForm(size);
+
+                    foreach (Control control in Controls)
+                    {
+                        UpdateControlColorsFonts(control, ControlColour, ColourFont, SystemFont);
+                    }
+
+                    UpdateControlSizes();
+
+
+                    SermonReader.parentForm = this;
+                    StatusBarMessages.statusLabelAction = statusLabelAction;
+                    StatusBarMessages.statusLabelShowing = statusLabelShowing;
+                    StatusBarMessages.statusLabelUpdates = statusLabelUpdates;
+
+                    startPage = new StartPageForm(this);
+                    AddNewTabPage(startPage);
                 }
             }
             catch (Exception e)
@@ -131,65 +171,23 @@ namespace AppUI
                 {
                     Close();
                 }
-                catch (Exception exception)
-                {
-
-                }
+                catch { }
             }
         }
         private void BackgroundWorkerRunProcess(BackgroundWorker bw)
         {
-            ShowInTaskbar = false;
-            WindowState = FormWindowState.Minimized;
-
             MainThread.InitialChecks();
             XMLBible.LoadBibleIntoMemory();
 
-            WindowInteropHelper helper = new WindowInteropHelper(this);
-            Screen currentScreen = Screen.FromHandle(helper.Handle);
-
-            Shown += delegate
-            {
-                if (Preferences.ShowWelcomeScreen)
-                {
-                    new WelcomeScreen().ShowDialog();
-                }
-            };
-            FormClosing += new FormClosingEventHandler(OnFormClosing);
-            Resize += delegate { UpdateControlSizes(); };
-
-            Text = szAppName;
-
-            iDesktopWorkingWidth = currentScreen.WorkingArea.Width;
-            iDesktopWorkingHeight = currentScreen.WorkingArea.Height;
-
-            Size size = new Size(iDesktopWorkingWidth, iDesktopWorkingHeight);
-
-            InitialiseForm(size);
-
-            foreach (Control control in Controls)
-            {
-                UpdateControlColorsFonts(control, ControlColour, ColourFont, SystemFont);
-            }
-
-            UpdateControlSizes();
-
-            try { treeviewAvailableDocs.SortTreeView(TreeViewEx.FILTER); }
-            catch {; }
-
-            SermonReader.parentForm = this;
-            StatusBarMessages.statusLabelAction = statusLabelAction;
-            StatusBarMessages.statusLabelShowing = statusLabelShowing;
-            StatusBarMessages.statusLabelUpdates = statusLabelUpdates;
-
-            startPage = new StartPageForm(this);
-            AddNewTabPage(startPage);
-            MainThread.CheckFileExistence();
+            check_file_existence_results = MainThread.CheckFileExistence();
         }
         private void BackgroundWorkerCompletedProcess()
         {
             try
             {
+                try { treeviewAvailableDocs.SortTreeView(TreeViewEx.FILTER); }
+                catch {; }
+
                 splashScreen.Close();
             }
             catch (Exception exception)
@@ -199,7 +197,6 @@ namespace AppUI
 
             WindowState = FormWindowState.Normal;
             ShowInTaskbar = true;
-            Cursor.Show();//it was hidden when the splashscreen was displayed
         }
         /// <summary>
         ///     Occurs when the form is just about to close.
@@ -249,18 +246,12 @@ namespace AppUI
             menuItemFile_New = (ToolStripMenuItem)menuItemFile.DropDownItems.Add("&New"); menuItemFile_New.Name = "New";
             menuItemFile_NewSermon = (ToolStripMenuItem)menuItemFile_New.DropDownItems.Add("&Sermon");
             menuItemFile_NewSeries = (ToolStripMenuItem)menuItemFile_New.DropDownItems.Add("Se&ries");
-            menuItemSeparator = new ToolStripSeparator()
-            {
-                Name = "separator"
-            };
+            menuItemSeparator = new ToolStripSeparator() { Name = "separator" };
             menuItemFile.DropDownItems.Add(menuItemSeparator);
 
             menuItemFile_Save = (ToolStripMenuItem)menuItemFile.DropDownItems.Add("&Save");
             menuItemFile_Print = (ToolStripMenuItem)menuItemFile.DropDownItems.Add("&Print");
-            menuItemSeparator = new ToolStripSeparator()
-            {
-                Name = "separator"
-            };
+            menuItemSeparator = new ToolStripSeparator() { Name = "separator" };
             menuItemFile.DropDownItems.Add(menuItemSeparator);
 
             menuItemFile_Close = (ToolStripMenuItem)menuItemFile.DropDownItems.Add("&Close");
@@ -334,15 +325,9 @@ namespace AppUI
                 Parent = splitContainer1.Panel2,
                 Dock = DockStyle.Fill
             };
-            statusLabelUpdates = new ToolStripStatusLabel()
-            {
-                Text = "Periodically check for updates e.g. weekly"
-            };
+            statusLabelUpdates = new ToolStripStatusLabel() { Text = "Periodically check for updates e.g. weekly" };
             statusLabelShowing = new ToolStripStatusLabel();
-            statusLabelAction = new ToolStripStatusLabel()
-            {
-                Text = "Started"
-            };
+            statusLabelAction = new ToolStripStatusLabel() { Text = "Started" };
             Padding padding = new Padding(5, 0, 5, 0);
             Size statusSize = new Size(statusBar.Width / 4, statusBar.Height);
             statusLabelUpdates.Available = statusLabelShowing.Available = statusLabelAction.Available = true;
@@ -630,8 +615,16 @@ namespace AppUI
         /// <param name="e">Event arguments.</param>
         private void PrintToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string DocumentID = tabControl.SelectedTab.Name;
-            MyPrintDialog printDialog = new MyPrintDialog(this, DocumentID);
+            string DocumentIDString = tabControl.SelectedTab.Name;
+            if(int.TryParse(DocumentIDString,out int DocumentID))
+            {
+                MyPrintDialog printDialog = new MyPrintDialog(this, DocumentID);
+            }
+            else
+            {
+                MessageBox.Show("Failed to print the document." +
+                    "\n\nError cause: Failed to resolve the document ID.");
+            }
         }
         /// <summary>
         /// Occurs when the Initialize Database MenuItem is clicked.
@@ -675,7 +668,10 @@ namespace AppUI
         /// <param name="e">ControlEvent arguments.</param>
         private void TabControl_ControlAdded(object sender, ControlEventArgs e)
         {
-            StatusBarMessages.SetStatusBarMessageShowing(tabControl.SelectedTab.Text);
+            if (tabControl.SelectedTab != null)
+            {
+                StatusBarMessages.SetStatusBarMessageShowing(tabControl.SelectedTab.Text);
+            }
             if (e.Control is TabPage tabPage)
             {
                 foreach (var c in tabPage.Name)
@@ -760,6 +756,25 @@ namespace AppUI
 
                 tabControl.TabPages.Add(newTabPage);
                 tabControl.SelectTab(newTabPage);
+            }
+        }
+
+        public void AnalyseFileExistenceResults()
+        {
+            if (!check_file_existence_results.Bible)
+            {
+                if (DialogResult.Yes == MessageBox.Show("No Bible was found on your PC. Do you desire to download one?\n\n[This application needs a Bible for maximum functionality]", "Bible missing", MessageBoxButtons.YesNo, MessageBoxIcon.Warning))
+                {
+                    UpdaterClass.DownloadBible();
+                }
+            }
+            if (!check_file_existence_results.VersionFile)
+            {
+
+            }
+            if (!check_file_existence_results.Walkthroughs)
+            {
+                MessageBox.Show("Walkthroughs missing");
             }
         }
     }

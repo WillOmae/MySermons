@@ -112,5 +112,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MySermons\MySermons.csproj">
+      <Project>{6434c56e-14db-4cd4-b9ab-bf07c0ec6bef}</Project>
+      <Name>MySermons</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -48,10 +48,10 @@ namespace AppUI
             
             parent.SizeChanged += delegate
             {
-                SuspendLayout();
+                //SuspendLayout();
                 Size parentSize = Parent.Size;
                 SetControlSizesAndPositions(parentSize);
-                ResumeLayout();
+                //ResumeLayout();
             };
         }
         public void UpdateColours(Color control, Color fore)

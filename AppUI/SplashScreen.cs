@@ -15,7 +15,6 @@ namespace AppUI
         }
         private void ShowSplashScreen()
         {
-            Cursor.Hide();
             var helper = new WindowInteropHelper(this);
             var currentScreen = Screen.FromHandle(helper.Handle);
             FormClosing += new FormClosingEventHandler(EhClosing);

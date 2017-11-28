@@ -16,11 +16,15 @@ namespace AppLauncher
         [STAThread]
         static void Main(string[] args)
         {
-            if (args.Length < 1) { return; }
+            //if (args.Length < 1) { return; }
 
-            StartupFolder = args[0];
-            string DllAppUI = args[0] + @"\bin\" + "AppUI.dll";
-            string DllAppEngine = args[0] + @"\bin\" + "AppEngine.dll";
+            //StartupFolder = args[0];
+            //string DllAppUI = args[0] + @"\bin\" + "AppUI.dll";
+            //string DllAppEngine = args[0] + @"\bin\" + "AppEngine.dll";
+
+            StartupFolder = @"D:\Projects\MySermons";
+            string DllAppUI = @"D:\Projects\MySermons\AppUI\bin\Debug\AppUI.dll";
+            string DllAppEngine = @"D:\Projects\MySermons\AppEngine\bin\Debug\AppEngine.dll";
 
             try
             {

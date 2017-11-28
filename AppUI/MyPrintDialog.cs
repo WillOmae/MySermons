@@ -66,7 +66,7 @@ namespace AppUI
                 CommonConstructor(parent, Visible);
             }
         }
-        public MyPrintDialog(ParentForm parent, string DocumentID)
+        public MyPrintDialog(ParentForm parent, int DocumentID)
         {
             if (GetPrintText(DocumentID))
             {
@@ -488,13 +488,13 @@ namespace AppUI
             }
             return false;
         }
-        private bool GetPrintText(string DocumentID)
+        private bool GetPrintText(int DocumentID)
         {
             try
             {
                 rtbPrintContent = new RichTextBoxEx()
                 {
-                    Rtf = SermonReader.DisplayStoredSermon(Sermon.GetSermonComponents(int.Parse(DocumentID))).RTFpublic
+                    Rtf = SermonReader.DisplayStoredSermon(Sermon.GetSermonComponents(DocumentID)).RTFpublic
                 };
                 return true;
             }

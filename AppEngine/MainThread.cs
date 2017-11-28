@@ -1,7 +1,5 @@
 ﻿using System.Data.SQLite;
 using System.IO;
-using System.Text;
-using System.Windows.Forms;
 
 namespace AppEngine
 {
@@ -187,10 +185,21 @@ namespace AppEngine
                 WriteXMLFile.CreateFile(FileNames.PermVersionFile);
             }
         }
-        static public void CheckFileExistence()
+
+        public struct CHECK_FILE_EXISTENCE_RESULTS
         {
+            public bool VersionFile;
+            public bool Bible;
+            public bool Walkthroughs;
+        }
+        static public CHECK_FILE_EXISTENCE_RESULTS CheckFileExistence()
+        {
+            CHECK_FILE_EXISTENCE_RESULTS results;
+            results.Bible = results.VersionFile = results.Walkthroughs = true;
+
             if (!File.Exists(FileNames.PermVersionFile))
             {
+                results.VersionFile = false;
                 WriteXMLFile.CreateFile(FileNames.PermVersionFile);
             }
             if (File.Exists(FileNames.tempBible))
@@ -203,15 +212,14 @@ namespace AppEngine
             }
             if (!File.Exists(FileNames.Bible))
             {
-                if (DialogResult.Yes == MessageBox.Show("No Bible was found on your PC. Do you desire to download one?\n\n[This application needs a Bible for maximum functionality]", "Bible missing", MessageBoxButtons.YesNo, MessageBoxIcon.Warning))
-                {
-                    UpdaterClass.DownloadBible();
-                }
+                results.Bible = false;
             }
             if (!Directory.Exists(FileNames.WalkthroughsDirectory))
             {
-                MessageBox.Show("Walkthroughs missing");
+                results.Walkthroughs = false;
             }
+
+            return results;
         }
     }
 }
