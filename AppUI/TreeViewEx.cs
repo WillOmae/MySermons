@@ -8,6 +8,7 @@ namespace AppUI
 {
     public class TreeViewEx : TreeView
     {
+        const char PAGE_BREAK = '\f';
         public ParentForm parentForm;
         static public string FILTER
         {
@@ -453,7 +454,7 @@ namespace AppUI
 
                                 rtbSource.Rtf = rtf;
 
-                                rtbSource.Text += '\f';
+                                rtbSource.Text += PAGE_BREAK;
                             }
                             catch
                             {
