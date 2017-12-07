@@ -17,17 +17,18 @@ namespace AppEngine.Database
             }
             set
             {
-                Venue venue = new Venue()
+                Venue venue = new Venue();
+                if ((venue = StaticLists.listOfVenues.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!venue.Exists(venue))//set venue does not exist. Create it
-                {
-                    venue.TownId = TownId;
+                    venue = new Venue()
+                    {
+                        Name = value,
+                        TownId = TownId
+                    };
                     venue.Insert(venue);
+                    venue = venue.Select(value);
+                    StaticLists.listOfVenues.Add(venue);
                 }
-                venue = venue.Select(value);//get the created venue
-
                 _venue = venue.Name;
                 VenueId = venue.Id;
             }
@@ -42,15 +43,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Town town = new Town()
+                Town town = new Town();
+                if ((town = StaticLists.listOfTowns.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!town.Exists(town))
-                {
+                    town = new Town()
+                    {
+                        Name = value
+                    };
                     town.Insert(town);
+                    town = town.Select(value);
+                    StaticLists.listOfTowns.Add(town);
                 }
-                town = town.Select(value);
                 _town = town.Name;
                 TownId = town.Id;
             }
@@ -65,16 +68,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Activity activity = new Activity()
+                Activity activity = new Activity();
+                if ((activity = StaticLists.listOfActivities.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!activity.Exists(activity))
-                {
+                    activity = new Activity()
+                    {
+                        Name = value
+                    };
                     activity.Insert(activity);
+                    activity = activity.Select(value);
+                    StaticLists.listOfActivities.Add(activity);
                 }
-                activity = activity.Select(value);
-
                 _activity = activity.Name;
                 ActivityId = activity.Id;
             }
@@ -91,16 +95,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Speaker speaker = new Speaker()
+                Speaker speaker = new Speaker();
+                if ((speaker = StaticLists.listOfSpeakers.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!speaker.Exists(speaker))
-                {
+                    speaker = new Speaker()
+                    {
+                        Name = value
+                    };
                     speaker.Insert(speaker);
+                    speaker = speaker.Select(value);
+                    StaticLists.listOfSpeakers.Add(speaker);
                 }
-                speaker = speaker.Select(value);
-
                 _speaker = speaker.Name;
                 SpeakerId = speaker.Id;
             }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace AppUI
@@ -14,7 +15,14 @@ namespace AppUI
         {
             get
             {
-                return Preferences.SortingFilter;
+                if (string.IsNullOrEmpty(Preferences.SortingFilter))
+                {
+                    return "SPEAKER";
+                }
+                else
+                {
+                    return Preferences.SortingFilter;
+                }
             }
             set
             {
@@ -255,48 +263,45 @@ namespace AppUI
             {
                 BeginUpdate();
                 Nodes.Clear();
+
                 List<AppEngine.Database.Sermon> list = new AppEngine.Database.Sermon().SelectAllCondensed();
+                list = list.OrderBy(x => x.DateCreated).ToList();
 
-                string[] parentNodes = Sermon.GetParentNodes(filter, list);
+                List<string> parentNodes = Sermon.GetParentNodes(filter, list);
 
-                for (int i = 0; i < parentNodes.Length; i++)
+                foreach (var parent in parentNodes)
                 {
-                    if (parentNodes[i] == null)
+                    if (!string.IsNullOrEmpty(parent))
                     {
-                        break;
-                    }
-                    TreeNode parentNode = new TreeNode()
-                    {
-                        Text = parentNodes[i],
-                        Name = "PARENTNODE"
-                    };
-                    bool nodeExists = false;
-                    foreach (TreeNode node in Nodes)
-                    {
-                        if (node.Text == parentNode.Text)
+                        TreeNode parentNode = new TreeNode()
                         {
-                            nodeExists = true;
+                            Text = parent,
+                            Name = "PARENTNODE"
+                        };
+                        bool nodeExists = false;
+                        foreach (TreeNode node in Nodes)
+                        {
+                            if (node.Text == parentNode.Text)
+                            {
+                                nodeExists = true;
+                            }
                         }
-                    }
-                    if (nodeExists == false)
-                    {
-                        Nodes.Add(parentNode);
+                        if (nodeExists == false)
+                        {
+                            Nodes.Add(parentNode);
+                        }
                     }
                 }
-
                 foreach (TreeNode parentNode in Nodes)
                 {
-                    string[,] childNodes = Sermon.GetChildNodes(filter, parentNode.Text, list);
-                    for (int i = 0; i < (childNodes.Length / 2); i++)
+                    List<KeyValuePair<string,string>> childNodes = Sermon.GetChildNodes(filter, parentNode.Text, list);
+
+                    foreach(var entry in childNodes)
                     {
-                        if (childNodes[0, i] == null)
-                        {
-                            break;
-                        }
                         TreeNode childNode = new TreeNode()
                         {
-                            Text = childNodes[0, i],
-                            Name = childNodes[1, i]
+                            Name = entry.Key,
+                            Text = entry.Value
                         };
                         if (!parentNode.Nodes.Contains(childNode))
                         {
@@ -313,6 +318,24 @@ namespace AppUI
                 EndUpdate();
             }
         }
+        public string AppendRTF(string oldRTF, string newRTF)
+        {
+            string RTF = oldRTF;
+            string RTFNew1 = newRTF.Remove(0, newRTF.IndexOf(";}") + 2);
+            RTFNew1 = RTFNew1.Remove(RTFNew1.IndexOf(";}}") + 3);
+
+            string RTFNew2 = newRTF.Remove(0, newRTF.IndexOf(";}}") + 3);
+
+            string RTFOld1 = oldRTF.Remove(oldRTF.IndexOf("}}") + 1);
+
+            string RTFOld2 = oldRTF.Replace(RTFOld1, "");
+            RTFOld2 = RTFOld2.Remove(0, 1);
+            RTFOld2 = RTFOld2.Remove(RTFOld2.LastIndexOf("}"));
+
+            RTF = RTFOld1 + RTFNew1 + RTFOld2 + RTFNew2;
+            return RTF;
+        }
+
         private void NodeDoubleClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -519,23 +542,6 @@ namespace AppUI
                 SortTreeView(FILTER);
                 StatusBarMessages.SetStatusBarMessageAction("Sorted by Theme");
             }
-        }
-        public string AppendRTF(string oldRTF, string newRTF)
-        {
-            string RTF = oldRTF;
-            string RTFNew1 = newRTF.Remove(0, newRTF.IndexOf(";}") + 2);
-            RTFNew1 = RTFNew1.Remove(RTFNew1.IndexOf(";}}") + 3);
-
-            string RTFNew2 = newRTF.Remove(0, newRTF.IndexOf(";}}") + 3);
-
-            string RTFOld1 = oldRTF.Remove(oldRTF.IndexOf("}}") + 1);
-
-            string RTFOld2 = oldRTF.Replace(RTFOld1, "");
-            RTFOld2 = RTFOld2.Remove(0, 1);
-            RTFOld2 = RTFOld2.Remove(RTFOld2.LastIndexOf("}"));
-
-            RTF = RTFOld1 + RTFNew1 + RTFOld2 + RTFNew2;
-            return RTF;
         }
     }
 }

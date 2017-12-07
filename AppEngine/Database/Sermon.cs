@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Windows.Forms;
 
 namespace AppEngine.Database
 {
@@ -17,11 +16,22 @@ namespace AppEngine.Database
             }
             set
             {
+                _Series = null;
                 _SeriesId = value;
-                Series = new Series(value).Name;
             }
         }
-        public string Series { get; set; }
+        private string _Series = null;
+        public string Series
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_Series))
+                {
+                    _Series = new Series(_SeriesId).Name;
+                }
+                return _Series;
+            }
+        }
         public DateTime DateCreated { get; set; }
         public int VenueId { get; set; }
         public string Venue
@@ -32,17 +42,18 @@ namespace AppEngine.Database
             }
             set
             {
-                Venue venue = new Venue()
+                Venue venue = new Venue();
+                if ((venue = StaticLists.listOfVenues.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!venue.Exists(venue))//set venue does not exist. Create it
-                {
-                    venue.TownId = TownId;
+                    venue = new Venue()
+                    {
+                        Name = value,
+                        TownId = TownId
+                    };
                     venue.Insert(venue);
+                    venue = venue.Select(value);
+                    StaticLists.listOfVenues.Add(venue);
                 }
-                venue = venue.Select(value);//get the created venue
-
                 _venue = venue.Name;
                 VenueId = venue.Id;
             }
@@ -57,15 +68,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Town town = new Town()
+                Town town = new Town();
+                if ((town = StaticLists.listOfTowns.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!town.Exists(town))
-                {
+                    town = new Town()
+                    {
+                        Name = value
+                    };
                     town.Insert(town);
+                    town = town.Select(value);
+                    StaticLists.listOfTowns.Add(town);
                 }
-                town = town.Select(value);
                 _town = town.Name;
                 TownId = town.Id;
             }
@@ -80,16 +93,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Activity activity = new Activity()
+                Activity activity = new Activity();
+                if ((activity = StaticLists.listOfActivities.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!activity.Exists(activity))
-                {
+                    activity = new Activity()
+                    {
+                        Name = value
+                    };
                     activity.Insert(activity);
+                    activity = activity.Select(value);
+                    StaticLists.listOfActivities.Add(activity);
                 }
-                activity = activity.Select(value);
-
                 _activity = activity.Name;
                 ActivityId = activity.Id;
             }
@@ -104,16 +118,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Speaker speaker = new Speaker()
+                Speaker speaker = new Speaker();
+                if ((speaker = StaticLists.listOfSpeakers.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!speaker.Exists(speaker))
-                {
+                    speaker = new Speaker()
+                    {
+                        Name = value
+                    };
                     speaker.Insert(speaker);
+                    speaker = speaker.Select(value);
+                    StaticLists.listOfSpeakers.Add(speaker);
                 }
-                speaker = speaker.Select(value);
-
                 _speaker = speaker.Name;
                 SpeakerId = speaker.Id;
             }
@@ -129,16 +144,17 @@ namespace AppEngine.Database
             }
             set
             {
-                Theme theme = new Theme()
+                Theme theme = new Theme();
+                if ((theme = StaticLists.listOfThemes.Find(x => x.Name == value)) == null)
                 {
-                    Name = value
-                };
-                if (!theme.Exists(theme))//set venue does not exist. Create it
-                {
+                    theme = new Theme()
+                    {
+                        Name = value
+                    };
                     theme.Insert(theme);
+                    theme = theme.Select(value);
+                    StaticLists.listOfThemes.Add(theme);
                 }
-                theme = theme.Select(value);//get the created venue
-
                 _theme = theme.Name;
                 ThemeId = theme.Id;
             }
@@ -362,6 +378,7 @@ namespace AppEngine.Database
             try
             {
                 List<Sermon> list = new List<Sermon>();
+
                 using (SQLiteConnection connection = new SQLiteConnection(FileNames.ConnectionString))
                 {
                     connection.Open();
@@ -460,7 +477,6 @@ namespace AppEngine.Database
                         }
                     }
                 }
-                Series = new Series(SeriesId).Name;
             }
             catch
             {

@@ -93,6 +93,7 @@
     <Compile Include="RecentlyOpenedDocs.cs" />
     <Compile Include="RecoverSermons.cs" />
     <Compile Include="Sermon.cs" />
+    <Compile Include="StaticLists.cs" />
     <Compile Include="StringSearch.cs" />
     <Compile Include="Tables.cs" />
     <Compile Include="UpdaterClass.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AppEngine
 {
@@ -169,13 +170,12 @@ namespace AppEngine
         }
         static public void DeleteSermon(int id)
         {
-            try
+            Database.Sermon sermon = new Database.Sermon(id);
+            if (sermon != null)
             {
-                Database.Sermon sermon = new Database.Sermon(id);
                 sermon.Delete(sermon);
                 RecentlyOpenedDocs.DeleteSermonFromID(id);
             }
-            catch {; }
         }
         static public int GetSermonCount()
         {
@@ -183,74 +183,61 @@ namespace AppEngine
         }
         static private string SermonSwitch(Database.Sermon sermon, string column)
         {
-            string value = string.Empty;
             switch (column.ToUpper())
             {
                 case "ACTIVITY":
-                    value = sermon.Activity;
-                    break;
+                    return sermon.Activity;
                 case "CONTENT":
-                    value = sermon.Content;
-                    break;
+                    return sermon.Content;
                 case "YEAR":
-                    value = sermon.DateCreated.Year.ToString();
-                    break;
+                    return sermon.DateCreated.Year.ToString();
                 case "HYMN":
-                    value = sermon.Hymn;
-                    break;
+                    return sermon.Hymn;
                 case "KEYTEXT":
-                    value = sermon.KeyText;
-                    break;
+                    return sermon.KeyText;
                 case "SERIES":
-                    value = sermon.Series;
-                    break;
+                    return sermon.Series;
                 case "SPEAKER":
-                    value = sermon.Speaker;
-                    break;
+                    return sermon.Speaker;
                 case "TITLE":
-                    value = sermon.Title;
-                    break;
+                    return sermon.Title;
                 case "THEME":
-                    value = sermon.Theme;
-                    break;
+                    return sermon.Theme;
                 case "TOWN":
-                    value = sermon.Town;
-                    break;
+                    return sermon.Town;
                 case "VENUE":
-                    value = sermon.Venue;
-                    break;
+                    return sermon.Venue;
                 default:
-                    value = String.Empty;
-                    break;
+                    return String.Empty;
             }
-            return value;
         }
-        static public string[] GetParentNodes(string filterColumn, List<Database.Sermon> list)
+        static public List<string> GetParentNodes(string filterColumn, List<Database.Sermon> list)
         {
-            string[] parentNodes = new string[list.Count];
-            int index = 0;
+            List<string> parentNodes = new List<string>(list.Count);
             foreach (Database.Sermon sermon in list)
             {
-                parentNodes[index] = SermonSwitch(sermon, filterColumn);
-                index++;
+                string nodeToAdd = SermonSwitch(sermon, filterColumn);
+                if (!parentNodes.Contains(nodeToAdd))
+                {
+                    parentNodes.Add(nodeToAdd);
+                }
             }
+            parentNodes.TrimExcess();
             return parentNodes;
         }
-        static public string[,] GetChildNodes(string filterColumn, string filterValue, List<Database.Sermon> list)
+        static public List<KeyValuePair<string, string>> GetChildNodes(string filterColumn, string filterValue, List<Database.Sermon> list)
         {
-            int index = 0;
+            List<KeyValuePair<string, string>> listToReturn = new List<KeyValuePair<string, string>>();
 
-            string[,] childNodes = new string[2, list.Count];
+            //var d = (from sermon in list where SermonSwitch(sermon, filterColumn) == filterValue select sermon);
             foreach (var sermon in list)
             {
                 if (SermonSwitch(sermon, filterColumn) == filterValue)
                 {
-                    childNodes[0, index] = sermon.Title;
-                    childNodes[1, index] = sermon.Id.ToString();
-                    index++;
+                    listToReturn.Add(new KeyValuePair<string, string>(sermon.Id.ToString(), sermon.Title));
                 }
             }
-            return childNodes;
+            return listToReturn;
         }
         static public int WriteSermon(string[] arraySermonComponents)
         {

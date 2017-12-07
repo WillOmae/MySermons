@@ -180,13 +180,14 @@ namespace AppUI
             XMLBible.LoadBibleIntoMemory();
 
             check_file_existence_results = MainThread.CheckFileExistence();
+
+            new AppEngine.StaticLists();
         }
         private void BackgroundWorkerCompletedProcess()
         {
             try
             {
-                try { treeviewAvailableDocs.SortTreeView(TreeViewEx.FILTER); }
-                catch {; }
+                treeviewAvailableDocs.SortTreeView(TreeViewEx.FILTER);
 
                 splashScreen.Close();
             }
@@ -346,6 +347,7 @@ namespace AppUI
             #region ****************** treeView (for displaying nodes of available docs) ****************** 
             treeviewAvailableDocs = new TreeViewEx()
             {
+                Sorted = false,
                 Parent = splitContainer2.Panel1,
                 Dock = DockStyle.Fill,
                 parentForm = this
