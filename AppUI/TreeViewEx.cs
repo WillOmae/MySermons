@@ -37,7 +37,6 @@ namespace AppUI
 
             MouseUp += new MouseEventHandler(RightClickPopUpMenu);
             FullRowSelect = true;
-            Sort();
             BorderStyle = BorderStyle.None;
             Visible = true;
 
@@ -178,8 +177,7 @@ namespace AppUI
         {
             ContextMenu = new ContextMenu();
             ContextMenu.Popup += new EventHandler(ContextMenu_Popup);
-
-
+            
             MenuItem menuitemSpeaker = new MenuItem("Speaker");
             menuitemSpeaker.Name = menuitemSpeaker.Text;
             menuitemSpeaker.Click += new EventHandler(MenuitemSpeaker_Click);
@@ -352,7 +350,7 @@ namespace AppUI
         {
             if (e.Button == MouseButtons.Right && e.Clicks == 1)
             {
-                ContextMenu.Show(this, new Point(e.X, e.Y));
+                ContextMenu.Show(this, e.Location);
             }
         }
         private void ContextMenu_Popup(object sender, EventArgs e)

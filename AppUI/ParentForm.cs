@@ -181,7 +181,7 @@ namespace AppUI
 
             check_file_existence_results = MainThread.CheckFileExistence();
 
-            new AppEngine.StaticLists();
+            new StaticLists();
         }
         private void BackgroundWorkerCompletedProcess()
         {

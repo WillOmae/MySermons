@@ -454,50 +454,47 @@ namespace AppUI
         private void SetValuesFromDB()
         {
             //set auto complete sources
-            AutoCompleteStringCollection acsc;
-
-            acsc = new AutoCompleteStringCollection();
-            var venues = new AppEngine.Database.Venue().SelectAll();
-            foreach (AppEngine.Database.Venue venue in venues)
+            foreach (AppEngine.Database.Venue venue in StaticLists.listOfVenues)
             {
-                acsc.Add(venue.Name);
+                if (!string.IsNullOrEmpty(venue.Name))
+                {
+                    txbVenue_Name.AutoCompleteCustomSource.Add(venue.Name);
+                }
             }
-            txbVenue_Name.AutoCompleteCustomSource = acsc;
-
-            acsc = new AutoCompleteStringCollection();
-            var towns = new AppEngine.Database.Town().SelectAll();
-            foreach (AppEngine.Database.Town town in towns)
+            
+            foreach (AppEngine.Database.Town town in StaticLists.listOfTowns)
             {
-                acsc.Add(town.Name);
+                if (!string.IsNullOrEmpty(town.Name))
+                {
+                    txbVenue_Town.AutoCompleteCustomSource.Add(town.Name);
+                }
             }
-            txbVenue_Town.AutoCompleteCustomSource = acsc;
-
-            acsc = new AutoCompleteStringCollection();
-            var activities = new AppEngine.Database.Activity().SelectAll();
-            foreach (AppEngine.Database.Activity activity in activities)
+            
+            foreach (AppEngine.Database.Activity activity in StaticLists.listOfActivities)
             {
-                acsc.Add(activity.Name);
+                if (!string.IsNullOrEmpty(activity.Name))
+                {
+                    txbVenue_Activity.AutoCompleteCustomSource.Add(activity.Name);
+                }
             }
-            txbVenue_Activity.AutoCompleteCustomSource = acsc;
-
-            acsc = new AutoCompleteStringCollection();
-            var speakers = new AppEngine.Database.Speaker().SelectAll();
-            foreach (AppEngine.Database.Speaker speaker in speakers)
+            
+            foreach (AppEngine.Database.Speaker speaker in StaticLists.listOfSpeakers)
             {
-                acsc.Add(speaker.Name);
+                if (!string.IsNullOrEmpty(speaker.Name))
+                {
+                    txbSpeakerName.AutoCompleteCustomSource.Add(speaker.Name);
+                }
             }
-            txbSpeakerName.AutoCompleteCustomSource = acsc;
-
-            acsc = new AutoCompleteStringCollection();
-            var themes = new AppEngine.Database.Theme().SelectAll();
-            foreach (AppEngine.Database.Theme theme in themes)
+            
+            foreach (AppEngine.Database.Theme theme in StaticLists.listOfThemes)
             {
-                acsc.Add(theme.Name);
+                if (!string.IsNullOrEmpty(theme.Name))
+                {
+                    txbTheme.AutoCompleteCustomSource.Add(theme.Name);
+                }
             }
-            txbTheme.AutoCompleteCustomSource = acsc;
-
-
-            var series = new AppEngine.Database.Series().SelectAll();
+            
+            var series = StaticLists.listOfSeries;
             if (series != null)
             {
                 cmbxSeries.DataSource = series;

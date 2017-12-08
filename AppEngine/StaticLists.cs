@@ -19,6 +19,13 @@ namespace AppEngine
             listOfSpeakers = new Database.Speaker().SelectAll();
             listOfThemes = new Database.Theme().SelectAll();
             listOfSeries = new Database.Series().SelectAll();
+
+            listOfVenues.TrimExcess();
+            listOfTowns.TrimExcess();
+            listOfActivities.TrimExcess();
+            listOfSpeakers.TrimExcess();
+            listOfThemes.TrimExcess();
+            listOfSeries.TrimExcess();
         }
     }
 }
