@@ -10,7 +10,7 @@ namespace AppUI
     /// </summary>
     public class RichTextBoxPro : UserControl
     {
-        private RichTextBox rtbTemp = new RichTextBox();//Used for looping
+        private RichTextBox rtbTemp = new RichTextBox();
 
         public RichTextBoxEx rtb;
 
@@ -92,8 +92,8 @@ namespace AppUI
                 Size = new Size(ClientSize.Width, ClientSize.Height - ts.Bottom)
             };
             rtb.SelectionChanged += RtbEx_SelectionChanged;
-            rtb.KeyDown += rtb_KeyDown;
-            rtb.KeyPress += rtb_KeyPress;
+            rtb.KeyDown += Rtb_KeyDown;
+            rtb.KeyPress += Rtb_KeyPress;
             if (RichTextBoxEx.ffInstalledFonts != null)
             { ffInstalledFonts = RichTextBoxEx.ffInstalledFonts; }
             else
@@ -351,33 +351,18 @@ namespace AppUI
         ///     Handler for the toolbar button click event
         /// </summary>
         private void ToolStripItem_Click(object sender, ToolStripItemClickedEventArgs e)
-
         {
-            // true if style to be added; false to remove style
-            bool add = false;
-            if (e.ClickedItem is ToolStripButton tsbtn)
-            {
-                if (tsbtn.CheckState == CheckState.Checked)
-                {
-                    add = true;
-                }
-                else if (tsbtn.CheckState == CheckState.Unchecked)
-                {
-                    add = false;
-                }
-            }
-
             //Switch based on the tag of the button pressed
             switch (e.ClickedItem.Tag.ToString().ToUpper())
             {
                 case "BOLD":
-                    ChangeFontStyle(FontStyle.Bold, add);
+                    tsiBold.Checked = ChangeFontStyle(FontStyle.Bold);
                     break;
                 case "ITALIC":
-                    ChangeFontStyle(FontStyle.Italic, add);
+                    tsiItalic.Checked = ChangeFontStyle(FontStyle.Italic);
                     break;
                 case "UNDERLINE":
-                    ChangeFontStyle(FontStyle.Underline, add);
+                    tsiUnderline.Checked = ChangeFontStyle(FontStyle.Underline);
                     break;
 
                 case "COLOR":
@@ -392,29 +377,16 @@ namespace AppUI
                     break;
 
                 case "CUT":
-                    {
-                        if (rtb.SelectedText.Length <= 0) break;
-                        rtb.Cut();
-                        break;
-                    }
+                    if (rtb.SelectedText.Length <= 0) break;
+                    rtb.Cut();
+                    break;
                 case "COPY":
-                    {
-                        if (rtb.SelectedText.Length <= 0) break;
-                        rtb.Copy();
-                        break;
-                    }
+                    if (rtb.SelectedText.Length <= 0) break;
+                    rtb.Copy();
+                    break;
                 case "PASTE":
-                    {
-                        try
-                        {
-                            rtb.Paste();
-                        }
-                        catch
-                        {
-                            MessageBox.Show("Paste Failed");
-                        }
-                        break;
-                    }
+                    rtb.Paste();
+                    break;
 
                 case "ALIGNLEFT":
                     ChangeTextAlignment(0);
@@ -448,29 +420,25 @@ namespace AppUI
                         ChangeTextHighlight(cdlgFont.Color);
                     }
                     break;
-            } //end switch
+            }
         }
         /// <summary>
         ///     Change the richtextbox font.
         /// </summary>
         private void Font_Click(object sender, EventArgs e)
         {
-            // Set the font for the entire selection
-
-            //the sender is a ToolStripComboBox control
-            tscmbxFontFamily.Text = (string)tscmbxFontFamily.SelectedItem;
-            ChangeFont(tscmbxFontFamily.Text);
+            var fontFamilyBox = sender as ToolStripComboBox;
+            fontFamilyBox.Text = (string)fontFamilyBox.SelectedItem;
+            ChangeFont(fontFamilyBox.Text);
         }
         /// <summary>
         ///     Change the richtextbox font size.
         /// </summary>
         private void FontSize_Click(object sender, EventArgs e)
         {
-            //set the richtextbox font size based on the name of the menu item
-
-            //the sender is a ToolStripComboBox control
-            tscmbxFontSize.Text = (string)tscmbxFontSize.SelectedItem;
-            ChangeFontSize(float.Parse(tscmbxFontSize.Text));
+            var fontSizeBox = sender as ToolStripComboBox;
+            fontSizeBox.Text = (string)fontSizeBox.SelectedItem;
+            ChangeFontSize(float.Parse(fontSizeBox.Text));
         }
         /// <summary>
         ///		Change the toolbar buttons when new text is selected
@@ -484,7 +452,7 @@ namespace AppUI
             //Send the SelChangedEvent
             SelChanged?.Invoke(this, e);
         }
-        private void rtb_KeyDown(object sender, KeyEventArgs e)
+        private void Rtb_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Modifiers == Keys.Control)
             {
@@ -505,10 +473,7 @@ namespace AppUI
 
                 if (tsi != null)
                 {
-                    if (e.KeyCode != Keys.S) tsi.Checked = !tsi.Checked;
-                    {
-                        ToolStripItem_Click(null, new ToolStripItemClickedEventArgs(tsi));
-                    }
+                    ToolStripItem_Click(null, new ToolStripItemClickedEventArgs(tsi));
                 }
             }
 
@@ -522,7 +487,7 @@ namespace AppUI
                 rtb.SelectedText = "\t";
 
         }
-        private void rtb_KeyPress(object sender, KeyPressEventArgs e)
+        private void Rtb_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 9)
                 e.Handled = true; // Stops Ctrl+I from inserting a tab (char HT) into the richtextbox
@@ -554,37 +519,19 @@ namespace AppUI
         /// <param name="fontFamily">The new font name.</param>
         public void ChangeFont(string fontFamily)
         {
-            //This method should handle cases that occur when multiple fonts/styles are selected
-            // Parameters:-
-            // fontFamily - the font to be applied, eg "Courier New"
-
-            // Reason: The reason this method and the others exist is because
-            // setting these items via the selection font doen't work because
-            // a null selection font is returned for a selection with more 
-            // than one font!
-
             int rtbstart = rtb.SelectionStart;
             int len = rtb.SelectionLength;
-            int rtbTempStart = 0;
-
-            // If len <= 1 and there is a selection font, amend and return
-            if (len <= 1 && rtb.SelectionFont != null)
-            {
-                rtb.SelectionFont =
-                    new Font(fontFamily, rtb.SelectionFont.Size, rtb.SelectionFont.Style);
-                return;
-            }
 
             // Step through the selected text one char at a time
             rtbTemp.Rtf = rtb.SelectedRtf;
             for (int i = 0; i < len; ++i)
             {
-                rtbTemp.Select(rtbTempStart + i, 1);
+                rtbTemp.Select(i, 1);
                 rtbTemp.SelectionFont = new Font(fontFamily, rtbTemp.SelectionFont.Size, rtbTemp.SelectionFont.Style);
             }
 
             // Replace & reselect
-            rtbTemp.Select(rtbTempStart, len);
+            rtbTemp.SelectAll();
             rtb.SelectedRtf = rtbTemp.SelectedRtf;
             rtb.Select(rtbstart, len);
             return;
@@ -595,35 +542,19 @@ namespace AppUI
         /// <param name="fontSize">The new font size.</param>
         public void ChangeFontSize(float fontSize)
         {
-            //This method should handle cases that occur when multiple fonts/styles are selected
-            // Parameters:-
-            // fontSize - the fontsize to be applied, eg 33.5
-
-            if (fontSize <= 0.0)
-                throw new System.InvalidProgramException("Invalid font size parameter to ChangeFontSize");
-
             int rtbstart = rtb.SelectionStart;
             int len = rtb.SelectionLength;
-            int rtbTempStart = 0;
-
-            // If len <= 1 and there is a selection font, amend and return
-            if (len <= 1 && rtb.SelectionFont != null)
-            {
-                rtb.SelectionFont =
-                    new Font(rtb.SelectionFont.FontFamily, fontSize, rtb.SelectionFont.Style);
-                return;
-            }
 
             // Step through the selected text one char at a time
             rtbTemp.Rtf = rtb.SelectedRtf;
             for (int i = 0; i < len; ++i)
             {
-                rtbTemp.Select(rtbTempStart + i, 1);
+                rtbTemp.Select(i, 1);
                 rtbTemp.SelectionFont = new Font(rtbTemp.SelectionFont.FontFamily, fontSize, rtbTemp.SelectionFont.Style);
             }
 
             // Replace & reselect
-            rtbTemp.Select(rtbTempStart, len);
+            rtbTemp.SelectAll();
             rtb.SelectedRtf = rtbTemp.SelectedRtf;
             rtb.Select(rtbstart, len);
             return;
@@ -634,33 +565,19 @@ namespace AppUI
         /// <param name="newColor">The new font color.</param>
         public void ChangeFontColor(Color newColor)
         {
-            //This method should handle cases that occur when multiple fonts/styles are selected
-            // Parameters:-
-            //	newColor - eg Color.Red
-
             int rtbstart = rtb.SelectionStart;
             int len = rtb.SelectionLength;
-            int rtbTempStart = 0;
-
-            //if len <= 1 and there is a selection font then just handle and return
-            if (len <= 1 && rtb.SelectionFont != null)
-            {
-                rtb.SelectionColor = newColor;
-                return;
-            }
 
             // Step through the selected text one char at a time	
             rtbTemp.Rtf = rtb.SelectedRtf;
             for (int i = 0; i < len; ++i)
             {
-                rtbTemp.Select(rtbTempStart + i, 1);
-
-                //change color
+                rtbTemp.Select(i, 1);
                 rtbTemp.SelectionColor = newColor;
             }
 
             // Replace & reselect
-            rtbTemp.Select(rtbTempStart, len);
+            rtbTemp.SelectAll();
             rtb.SelectedRtf = rtbTemp.SelectedRtf;
             rtb.Select(rtbstart, len);
             return;
@@ -670,54 +587,65 @@ namespace AppUI
 		/// </summary>
         /// <param name="style">The new font style e.g. FontStyle.Bold</param>
         /// <param name="add">If true then add; else remove.</param>
-		public void ChangeFontStyle(FontStyle style, bool add)
+        public bool ChangeFontStyle(FontStyle style)
         {
-            //This method should handle cases that occur when multiple fonts/styles are selected
-            // Parameters:-
-            //	style - eg FontStyle.Bold
-            //	add - IF true then add else remove
-
-            // throw error if style isn't: bold, italic, strikeout or underline
-            if (style != FontStyle.Bold
-                && style != FontStyle.Italic
-                && style != FontStyle.Strikeout
-                && style != FontStyle.Underline)
-                throw new InvalidProgramException("Invalid style parameter to ChangeFontStyle");
+            // Here's the logic:
+            // The characters of the selected text are looked at one at a time
+            // If the first contains the style, it is assumed that the entire range of characters contains the style
+            // The style is then removed
+            // If the first does not contain the style, then the style will be applied
+            // Return a boolean showing whether the style button should be checked or not depending on whether the style was applied or not
 
             int rtbstart = rtb.SelectionStart;
             int len = rtb.SelectionLength;
-            int rtbTempStart = 0;
+            bool containsStyle = false;
 
-            //if len <= 1 and there is a selection font then just handle and return
-            if (len <= 1 && rtb.SelectionFont != null)
-            {
-                //add or remove style 
-                if (add)
-                    rtb.SelectionFont = new Font(rtb.SelectionFont, rtb.SelectionFont.Style | style);
-                else
-                    rtb.SelectionFont = new Font(rtb.SelectionFont, rtb.SelectionFont.Style & ~style);
-
-                return;
-            }
-
-            // Step through the selected text one char at a time	
             rtbTemp.Rtf = rtb.SelectedRtf;
-            for (int i = 0; i < len; ++i)
+
+            rtbTemp.Select(0, 1);
+            switch (style)
             {
-                rtbTemp.Select(rtbTempStart + i, 1);
-
-                //add or remove style 
-                if (add)
-                    rtbTemp.SelectionFont = new Font(rtbTemp.SelectionFont, rtbTemp.SelectionFont.Style | style);
-                else
-                    rtbTemp.SelectionFont = new Font(rtbTemp.SelectionFont, rtbTemp.SelectionFont.Style & ~style);
+                case FontStyle.Bold:
+                    if (rtbTemp.SelectionFont.Bold)
+                    {
+                        containsStyle = true;
+                    }
+                    break;
+                case FontStyle.Italic:
+                    if (rtbTemp.SelectionFont.Italic)
+                    {
+                        containsStyle = true;
+                    }
+                    break;
+                case FontStyle.Underline:
+                    if (rtbTemp.SelectionFont.Underline)
+                    {
+                        containsStyle = true;
+                    }
+                    break;
             }
-
-            // Replace & reselect
-            rtbTemp.Select(rtbTempStart, len);
+            rtbTemp.SelectAll();
+            if (containsStyle)
+            {
+                for (int i = 0; i < len; ++i)
+                {
+                    rtbTemp.Select(i, 1);
+                    rtbTemp.SelectionFont = new Font(rtbTemp.SelectionFont, rtbTemp.SelectionFont.Style & ~style);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < len; ++i)
+                {
+                    rtbTemp.Select(i, 1);
+                    rtbTemp.SelectionFont = new Font(rtbTemp.SelectionFont, rtbTemp.SelectionFont.Style | style);
+                }
+            }
+            rtbTemp.SelectAll();
             rtb.SelectedRtf = rtbTemp.SelectedRtf;
             rtb.Select(rtbstart, len);
-            return;
+
+            return !containsStyle;
         }
         /// <summary>
         /// Change the richtextbox text alignment for the current selection
@@ -753,93 +681,46 @@ namespace AppUI
         /// </summary>
         public void UpdateToolbar()
         {
-            // Get the font, fontsize and style to apply to the toolstrip buttons
-            Font fnt = GetFontDetails();
-
-            //Set all the style buttons using the gathered style
-            tsiBold.Checked = fnt.Bold; //bold button
-            tsiItalic.Checked = fnt.Italic; //italic button
-            tsiUnderline.Checked = fnt.Underline; //underline button
-
-            //Check the correct font
-            if (tscmbxFontFamily.Items.Contains(fnt.FontFamily.Name))
+            if (rtb.SelectedText.Length > 0)
             {
-                tscmbxFontFamily.Text = (fnt.FontFamily.Name);
-            }
-            //Check the correct font size
-            if (tscmbxFontSize.Items.Contains(fnt.SizeInPoints))
-            {
-                tscmbxFontSize.Text = (Convert.ToInt32(fnt.SizeInPoints).ToString());
-            }
+                // Get the font, fontsize and style to apply to the toolstrip buttons
+                Font fnt = GetFontDetails();
 
+                //Set all the style buttons using the gathered style
+                tsiBold.Checked = fnt.Bold;
+                tsiItalic.Checked = fnt.Italic;
+                tsiUnderline.Checked = fnt.Underline;
+
+                //Check the correct font
+                if (tscmbxFontFamily.Items.Contains(fnt.FontFamily.Name) &&
+                    tscmbxFontFamily.Text != fnt.FontFamily.Name)
+                {
+                    tscmbxFontFamily.Text = (fnt.FontFamily.Name);
+                }
+                //Check the correct font size
+                if (tscmbxFontSize.Items.Contains(fnt.SizeInPoints) &&
+                    tscmbxFontSize.Text != fnt.SizeInPoints.ToString())
+                {
+                    tscmbxFontSize.Text = (Convert.ToInt32(fnt.SizeInPoints).ToString());
+                }
+            }
         }
         /// <summary>
         ///     Returns a Font with:
-        ///     1) The font applying to the entire selection, if none is the default font. 
+        ///     1) The font applying to the entire selection, if none is the default font.
         ///     2) The font size applying to the entire selection, if none is the size of the default font.
         ///     3) A style containing the attributes that are common to the entire selection, default regular.
-        /// </summary>		
+        /// </summary>
         /// 
         public Font GetFontDetails()
         {
-            //This method should handle cases that occur when multiple fonts/styles are selected
-
-            int rtbstart = rtb.SelectionStart;
-            int len = rtb.SelectionLength;
-            int rtbTempStart = 0;
-
-            if (len <= 1)
-            {
-                // Return the selection or default font
-                if (rtb.SelectionFont != null)
-                    return rtb.SelectionFont;
-                else
-                    return rtb.Font;
-            }
-
-            // Step through the selected text one char at a time	
-            // after setting defaults from first char
             rtbTemp.Rtf = rtb.SelectedRtf;
+            rtbTemp.Select(0, 1);
 
-            //Turn everything on so we can turn it off one by one
-            FontStyle replystyle =
-                FontStyle.Bold | FontStyle.Italic | FontStyle.Strikeout | FontStyle.Underline;
-
-            // Set reply font, size and style to that of first char in selection.
-            rtbTemp.Select(rtbTempStart, 1);
-            string replyfont = rtbTemp.SelectionFont.Name;
-            float replyfontsize = rtbTemp.SelectionFont.Size;
-            replystyle = replystyle & rtbTemp.SelectionFont.Style;
-
-            // Search the rest of the selection
-            for (int i = 1; i < len; ++i)
-            {
-                rtbTemp.Select(rtbTempStart + i, 1);
-
-                // Check reply for different style
-                replystyle = replystyle & rtbTemp.SelectionFont.Style;
-
-                // Check font
-                if (replyfont != rtbTemp.SelectionFont.FontFamily.Name)
-                    replyfont = "";
-
-                // Check font size
-                if (replyfontsize != rtbTemp.SelectionFont.Size)
-                    replyfontsize = (float)0.0;
-            }
-
-            // Now set font and size if more than one font or font size was selected
-            if (replyfont == "")
-                replyfont = rtbTemp.Font.FontFamily.Name;
-
-            if (replyfontsize == 0.0)
-                replyfontsize = rtbTemp.Font.Size;
-
-            // generate reply font
-            Font reply
-                = new Font(replyfont, replyfontsize, replystyle);
-
-            return reply;
+            if (rtbTemp.SelectionFont != null)
+                return rtbTemp.SelectionFont;
+            else
+                return rtbTemp.Font;
         }
         #endregion
 
