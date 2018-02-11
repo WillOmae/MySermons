@@ -36,7 +36,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>WON.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>WON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>
@@ -167,7 +167,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="Resources\Align_Center.png" />
-    <None Include="WON.pfx" />
+    <None Include="WON.snk" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Align_Justified.png" />

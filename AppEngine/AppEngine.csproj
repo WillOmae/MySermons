@@ -38,7 +38,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>WON.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>WON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>
@@ -104,7 +104,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="WON.pfx" />
+    <None Include="WON.snk" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="XMLCodeDumpsite.txt" />

@@ -59,12 +59,12 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>WON.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>WON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="WON.pfx" />
+    <None Include="WON.snk" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ILauncher.cs" />
