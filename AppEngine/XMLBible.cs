@@ -159,7 +159,7 @@ namespace AppEngine
             {
                 return null;
             }
-
+            CreateFriendlyTexts(list);
             return list;
         }
         /// <summary>
@@ -928,6 +928,51 @@ namespace AppEngine
                 }
             }
             return "NOT_A_VERSE";
+        }
+        private static void CreateFriendlyTexts(List<BIBLETEXTINFO> list)
+        {
+            for (int i = 0; i < list.Count; ++i)
+            {
+                var item = list[i];
+                BCVSTRUCT start = new BCVSTRUCT();
+                BCVSTRUCT end = new BCVSTRUCT();
+
+                ParseForBCVStructs(item.bcv, ref start, ref end);
+                if (string.IsNullOrEmpty(start.Book))
+                {
+                    continue;
+                }
+                else
+                {
+                    start.Book = start.Book.ToLower();
+                    for (int j = 0; j < start.Book.Length; ++j)
+                    {
+                        if (char.IsLetter(start.Book[j]))
+                        {
+                            start.Book = start.Book.Insert(j, start.Book[j].ToString().ToUpper());
+                            start.Book = start.Book.Remove(j + 1, 1);
+                            break;
+                        }
+                    }
+                    if (string.IsNullOrEmpty(end.Book))
+                    {
+                        item.FriendlyText = start.Book + " " + start.Chapter + ":" + start.Verse;
+                    }
+                    else
+                    {
+                        if (start.Verse == "1" &&
+                            end.Verse == VerseCount(end.Book, end.Chapter).ToString())
+                        {
+                            item.FriendlyText = start.Book + " " + start.Chapter;
+                        }
+                        else
+                        {
+                            item.FriendlyText = start.Book + " " + start.Chapter + ":" + start.Verse + "-" + end.Verse;
+                        }
+                    }
+                }
+                list[i] = item;
+            }
         }
 
         /// <summary>

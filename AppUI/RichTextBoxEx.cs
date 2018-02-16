@@ -2,7 +2,7 @@
  * Date: 
  * RichTextBoxEx
  * This is an extended RichTextBox with the following added capabilities:
- *      Watermarking
+ *      Watermark support
  *      Printing (necessary classes)
  *      Custom links
  */
@@ -52,7 +52,7 @@ namespace AppUI
         private string szWatermark = "";
         static public FontFamily[] ffInstalledFonts = null;
         #endregion
-        
+
         /// <summary>
         /// Initializes a new instance of the RichTextBoxEx class.
         /// </summary>
@@ -93,6 +93,13 @@ namespace AppUI
         }
         private void GetVerse(string boundedText, int boundStart, int boundEnd)
         {
+            /* Here's the logic:
+             * When the KeyUp event handler calls this method,
+             * get the text between the bounds of the verse delimiter (~ in this case).
+             * This text is then parsed to the XMLBible class parsing functions.
+             * The result of the above step is then inserted as a custom link.
+             */
+             
             //boundStart must be less than boundEnd
             if (boundStart > boundEnd)
             {
@@ -104,30 +111,26 @@ namespace AppUI
                 return;
             }
             // NB: The boundedText contains both bounding tildes
-            boundStart--;//for some reason
+            --boundStart;//for some reason
 
             string parseString = boundedText.Replace("~", string.Empty);
             List<XMLBible.BIBLETEXTINFO> list = XMLBible.ParseStringToVerse(parseString);
 
             if (list != null && list.Count != 0)
             {
-                string concatBCV = string.Empty;
+                DeleteRTBText(boundStart, boundEnd);
                 for (int i = 0; i < list.Count; i++)
                 {
-                    if (!string.IsNullOrEmpty(list[i].bcv))
+                    if (i == (list.Count - 1))
                     {
-                        if (i == (list.Count - 1))
-                        {
-                            concatBCV += list[i].bcv;
-                        }
-                        else
-                        {
-                            concatBCV += list[i].bcv + "; ";
-                        }
+                        InsertVerse(list[i].FriendlyText, list[i].bcv, boundStart);
                     }
+                    else
+                    {
+                        InsertVerse(list[i].FriendlyText + "; ", list[i].bcv, boundStart);
+                    }
+                    boundStart = SelectionStart;
                 }
-                DeleteRTBText(boundStart, boundEnd);
-                InsertVerse(concatBCV, string.Empty, boundStart);
             }
         }
         public void InsertVerse(string text, string hyperlink, int position)
@@ -136,10 +139,13 @@ namespace AppUI
                 return;
 
             var sb = new StringBuilder();
-            sb.Append(@"{\rtf1\ansi");
+            sb.Append(@"{\rtf1\ansi ");
             sb.Append(@"\b ");
             sb.Append(text);
-            sb.Append(@"\b0\b0");
+            sb.Append(@"\b0 ");
+            sb.Append(@"\v ");
+            sb.Append(hyperlink);
+            sb.Append(@"\v0 ");
 
             SelectionStart = position;
             SelectedRtf = sb.ToString();
@@ -174,6 +180,44 @@ namespace AppUI
                     return null;
                 }
             }
+        }
+        /// <summary>
+        /// Gets the hidden text corresponding to the link text.
+        /// </summary>
+        /// <param name="linkText"></param>
+        /// <returns></returns>
+        private string GetLinkHiddenText(string linkText)
+        {
+            /* Here's the logic:
+             * When the document is created with verses,
+             * the friendly verse text is placed between \b and \b0 -> bold;
+             * the bcv is placed between \v and \v0 -> hidden.
+             * The purpose of this method is to find the text between \v and \v0
+             * just after the linkText.
+             */
+
+            int currentPosition = SelectionStart;
+            string rtf = Rtf;
+
+            int indexOfLinkText = Text.IndexOf(linkText);
+            if (indexOfLinkText != -1)
+            {
+                Select(indexOfLinkText, linkText.Length);
+                int indexOfSelectedText = rtf.IndexOf(SelectedText);
+                rtf = rtf.Substring(indexOfSelectedText);
+                int iStart = rtf.IndexOf(@"\v ");
+                if (iStart != -1)
+                {
+                    rtf = rtf.Substring(iStart + 3);
+                    Select(currentPosition, 0);
+                    int iEnd = rtf.IndexOf(@"\");
+                    if (iEnd != -1)
+                    {
+                        return rtf.Substring(0, iEnd);
+                    }
+                }
+            }
+            return linkText;
         }
 
         #region EventHandlers
@@ -213,25 +257,21 @@ namespace AppUI
         {
             try
             {
-                string szHeader;
+                System.Diagnostics.Process.Start(e.LinkText);
+            }
+            catch
+            {
+                string szHeader = e.LinkText;
                 List<string> listofTextToDisplay = new List<string>();
 
+                string bcv = GetLinkHiddenText(e.LinkText);
                 XMLBible.BCVSTRUCT start = new XMLBible.BCVSTRUCT();
                 XMLBible.BCVSTRUCT end = new XMLBible.BCVSTRUCT();
-                if (XMLBible.ParseForBCVStructs(e.LinkText, ref start, ref end) != "NOT_A_VERSE")
+                if (XMLBible.ParseForBCVStructs(bcv, ref start, ref end) != "NOT_A_VERSE")
                 {
-                    szHeader = e.LinkText;
                     listofTextToDisplay = XMLBible.GetVerseText(ref start, ref end);
                     TextCardHolder PopUp = new TextCardHolder(listofTextToDisplay.ToArray(), szHeader);
                 }
-                else//launch required process to handle the link
-                {
-                    System.Diagnostics.Process.Start(e.LinkText);
-                }
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show("In SermonReader, after link clicked: " + exception.Message);
             }
         }
         private void EhKeyUp(object sender, KeyEventArgs e)
@@ -261,9 +301,10 @@ namespace AppUI
                 InitialiseBounds();
             }
         }
+
         #endregion
 
-        
+
         //Extended capabilities from https://www.codeproject.com/articles/9196/links-with-arbitrary-text-in-a-richtextbox
 
         #region Interop-Defines
@@ -509,7 +550,7 @@ namespace AppUI
             Marshal.FreeCoTaskMem(lpar);
             return state;
         }
-        
+
 
 
         #region BORROWED CODE FROM MSDN
