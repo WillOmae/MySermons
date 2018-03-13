@@ -44,7 +44,7 @@ namespace AppUI
         }
         private string szWatermark = string.Empty;
         static public FontFamily[] ffInstalledFonts = null;
-        private const char DELIMITER = "~";
+        private const char DELIMITER = '~';
 
         /// <summary>
         /// Initializes a new instance of the RichTextBoxEx class.
