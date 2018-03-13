@@ -5,8 +5,6 @@ namespace AppUI
 {
     public class TextCardHolder : Form
     {
-        private TextBox txbContent = new TextBox();
-
         public TextCardHolder(string[] arrayDisplayText, string szHeader)
         {
             MaximumSize = new System.Drawing.Size(300, 500);
@@ -20,14 +18,17 @@ namespace AppUI
             Size = new System.Drawing.Size(300, 0);
             TopLevel = TopMost = true;
             Text = szHeader;
-            LostFocus += new EventHandler(EhLostFocus);
-            
+            LostFocus += EhLostFocus;
+
             int height = 0;
+            int scrollBarWidth = new VScrollBar().Width;
+            int textCardWidth = 250;
             foreach (string entry in arrayDisplayText)
             {
                 TextCard cardDisplay = new TextCard()
                 {
                     DisplayText = entry,
+                    Left = ((Width - scrollBarWidth - textCardWidth) / 2),
                     Top = height
                 };
                 cardDisplay.LostFocus += EhLostFocus;
