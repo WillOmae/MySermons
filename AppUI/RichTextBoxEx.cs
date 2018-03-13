@@ -23,13 +23,6 @@ namespace AppUI
     /// </summary>
     public class RichTextBoxEx : RichTextBox
     {
-        #region Global Variables
-        private struct BOUNDS
-        {
-            public int bound1;
-            public int bound2;
-        }
-        private BOUNDS VerseBounds;
         public string Watermark
         {
             get
@@ -49,9 +42,9 @@ namespace AppUI
 
             }
         }
-        private string szWatermark = "";
+        private string szWatermark = string.Empty;
         static public FontFamily[] ffInstalledFonts = null;
-        #endregion
+        private const char DELIMITER = "~";
 
         /// <summary>
         /// Initializes a new instance of the RichTextBoxEx class.
@@ -69,12 +62,6 @@ namespace AppUI
             Multiline = true;
             KeyUp += EhKeyUp;
             WordWrap = true;
-
-            InitialiseBounds();
-        }
-        private void InitialiseBounds()
-        {
-            VerseBounds.bound1 = VerseBounds.bound2 = -1;
         }
         private void RestoreText(string textToRestore, int position)
         {
@@ -84,14 +71,14 @@ namespace AppUI
         }
         private string DeleteRTBText(int start, int end)
         {
-            Select(start, end - start);
+            Select(start, (end + 1) - start);
             string originalRTF = SelectedRtf;
             SelectedRtf = string.Empty;
             SelectionStart = start;
 
             return originalRTF;
         }
-        private void GetVerse(string boundedText, int boundStart, int boundEnd)
+        private void GetVerse(int boundStart, int boundEnd)
         {
             /* Here's the logic:
              * When the KeyUp event handler calls this method,
@@ -99,38 +86,42 @@ namespace AppUI
              * This text is then parsed to the XMLBible class parsing functions.
              * The result of the above step is then inserted as a custom link.
              */
-             
-            //boundStart must be less than boundEnd
-            if (boundStart > boundEnd)
-            {
-                GetVerse(boundedText, boundEnd, boundStart + 1);// +1 for some reason!
-                return;
-            }
+
             if ((boundEnd - boundStart) <= 3)
             {
                 return;
             }
-            // NB: The boundedText contains both bounding tildes
-            --boundStart;//for some reason
 
-            string parseString = boundedText.Replace("~", string.Empty);
+            string parseString = GetTextBetweenBounds(boundStart, boundEnd);
             List<XMLBible.BIBLETEXTINFO> list = XMLBible.ParseStringToVerse(parseString);
 
             if (list != null && list.Count != 0)
             {
+                int cursorPosition = -1;
                 DeleteRTBText(boundStart, boundEnd);
                 for (int i = 0; i < list.Count; i++)
                 {
-                    if (i == (list.Count - 1))
+                    if (i == (list.Count - 1))//last item in the list
                     {
                         InsertVerse(list[i].FriendlyText, list[i].bcv, boundStart);
+                        cursorPosition = boundStart + list[i].FriendlyText.Length;
                     }
                     else
                     {
                         InsertVerse(list[i].FriendlyText + "; ", list[i].bcv, boundStart);
+                        cursorPosition = boundStart + list[i].FriendlyText.Length + 1;
                     }
                     boundStart = SelectionStart;
                 }
+                SelectionStart = cursorPosition;
+            }
+            else
+            {
+                Text = Text.Insert(boundStart, "[");
+                Text = Text.Remove(boundStart + 1, 1);
+                Text = Text.Insert(boundEnd, "]");
+                Text = Text.Remove(boundEnd + 1, 1);
+                SelectionStart = boundEnd + 1;
             }
         }
         public void InsertVerse(string text, string hyperlink, int position)
@@ -151,34 +142,21 @@ namespace AppUI
             SelectedRtf = sb.ToString();
             SelectionStart = position + sb.Length;
         }
-        private void SetVerseBounds()
-        {
-            if (VerseBounds.bound1 == -1)
-            {
-                VerseBounds.bound1 = SelectionStart;
-                VerseBounds.bound2 = -1;
-            }
-            else if (VerseBounds.bound2 == -1)
-            {
-                VerseBounds.bound2 = SelectionStart;
-            }
-        }
+        /// <summary>
+        /// Extracts text between given bounds.
+        /// </summary>
+        /// <param name="bound1"></param>
+        /// <param name="bound2"></param>
+        /// <returns></returns>
         private string GetTextBetweenBounds(int bound1, int bound2)
         {
-            if (bound1 > bound2)
+            try
             {
-                return GetTextBetweenBounds(bound2, bound1 + 1);// +1 for some reason!
+                return Text.Substring(bound1 + 1, bound2 - 1 - bound1);
             }
-            else
+            catch (ArgumentOutOfRangeException)
             {
-                try
-                {
-                    return Text.Substring(bound1, bound2 - 1 - bound1);
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    return null;
-                }
+                return null;
             }
         }
         /// <summary>
@@ -278,19 +256,16 @@ namespace AppUI
         {
             if (e.KeyCode == Keys.Oemtilde && e.Shift == true)
             {
-                SetVerseBounds();
-            }
-
-            if (VerseBounds.bound1 != -1 && VerseBounds.bound2 != -1)
-            {
-                if (Math.Abs(VerseBounds.bound2 - VerseBounds.bound1) > 1)
+                var endPos = SelectionStart - 1;
+                var prevPos = Text.Substring(0, endPos).LastIndexOf(DELIMITER);
+                if (prevPos != -1)
                 {
-                    String verse = GetTextBetweenBounds(VerseBounds.bound1, VerseBounds.bound2);
+                    String verse = GetTextBetweenBounds(prevPos, endPos);
 
                     if (verse != null)
                     {
                         Font prevFont = SelectionFont;//get initial font
-                        GetVerse(verse, VerseBounds.bound1, VerseBounds.bound2);
+                        GetVerse(prevPos, endPos);
                         SelectionFont = prevFont;//revert to previous font
                     }
                     else
@@ -298,7 +273,6 @@ namespace AppUI
                         MessageBox.Show("ERROR");
                     }
                 }
-                InitialiseBounds();
             }
         }
 

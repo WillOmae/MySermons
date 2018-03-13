@@ -121,7 +121,7 @@ namespace AppEngine
         {
             if (!string.IsNullOrEmpty(stringToParse) && !string.IsNullOrWhiteSpace(stringToParse))
             {
-                List<BIBLETEXTINFO> list = new List<BIBLETEXTINFO>();
+                List<BIBLETEXTINFO> listOfBTI = new List<BIBLETEXTINFO>();
 
                 List<BCVRANGE> listOfBCVRanges = new List<BCVRANGE>();
 
@@ -140,17 +140,17 @@ namespace AppEngine
                     if (END.Book == null)//no range: show single bcv
                     {
                         bibleTextInfo.bcv = START.bcv;
-                        list.Add(bibleTextInfo);
+                        listOfBTI.Add(bibleTextInfo);
                     }
                     else//range: show start and end bcv's
                     {
                         bibleTextInfo.bcv = START.bcv + RANGE_SEPARATOR + END.bcv;
-                        list.Add(bibleTextInfo);
+                        listOfBTI.Add(bibleTextInfo);
                     }
                     //end of update
                 }
-                CreateFriendlyTexts(list);
-                return list;
+                CreateFriendlyTexts(listOfBTI);
+                return listOfBTI;
             }
             else
             {
@@ -193,7 +193,7 @@ namespace AppEngine
                 {
                     if (builder.ToString().Length > 0)
                     {
-                        listOfBCVRanges = ParseString1(builder.ToString());
+                        ParseString1(listOfBCVRanges, builder.ToString());
                     }
                     builder.Clear();//clear build string to accommodate next string
                 }
@@ -216,11 +216,11 @@ namespace AppEngine
         /// </summary>
         /// <param name="stringToParse">The string to parse.</param>
         /// <param name="listOfBCVRanges">The list to be updated passed by reference.</param>
-        private static List<BCVRANGE> ParseString1(string stringToParse)
+        private static void ParseString1(List<BCVRANGE> listOfBCVRanges, string stringToParse)
         {
             if (stringToParse.Length < 1)
             {
-                return null;
+                return;
             }
 
             stringToParse = stringToParse.Trim();
@@ -234,7 +234,6 @@ namespace AppEngine
             {
                 Book = null
             };
-            List<BCVRANGE> listOfBCVRanges = new List<BCVRANGE>();
             bool addedVerse = false;
             StringBuilder builder = new StringBuilder(stringToParse.Length);
             for (int i = 0; i < stringToParse.Length; i++)
@@ -247,7 +246,7 @@ namespace AppEngine
                         {
                             builder = new StringBuilder(SetStringForInblockSeparator(bibleTextCurrent, builder.ToString(), addedVerse));
                         }
-                        bibleTextCurrent = ParseString2(builder.ToString(), ref listOfBCVRanges, out addedVerse);
+                        bibleTextCurrent = ParseString2(builder.ToString(), listOfBCVRanges, out addedVerse);
                     }
                     builder.Clear();//clear builder to accommodate next string
                 }
@@ -256,7 +255,7 @@ namespace AppEngine
                     builder.Append(stringToParse[i]);
                 }
             }
-            return listOfBCVRanges;
+            return;
         }
         /// <summary>
         ///     A subsidiary parsing function to the inblock separator function.
@@ -310,7 +309,7 @@ namespace AppEngine
             }
             return returnString;
         }
-        private static BCVSTRUCT ParseString2(string stringToParse, ref List<BCVRANGE> listOfBCVRanges, out bool addedVerse)
+        private static BCVSTRUCT ParseString2(string stringToParse, List<BCVRANGE> listOfBCVRanges, out bool addedVerse)
         {
             BCVSTRUCT bibleText_Start = new BCVSTRUCT()
             {
