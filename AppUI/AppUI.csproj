@@ -66,6 +66,7 @@
     <Compile Include="AboutDlgBox.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Cleaner.cs" />
     <Compile Include="ColorComboBox.cs">
       <SubType>Component</SubType>
     </Compile>

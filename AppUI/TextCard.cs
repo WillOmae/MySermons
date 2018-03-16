@@ -41,7 +41,14 @@ namespace AppUI
         {
             if (e.Button == MouseButtons.Right)
             {
-                Clipboard.SetText(DisplayText);
+                try
+                {
+                    Clipboard.SetText(DisplayText);
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to copy the verse text to clipboard.", "Copy failed!");
+                }
             }
         }
     }

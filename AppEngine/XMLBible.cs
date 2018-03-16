@@ -591,6 +591,7 @@ namespace AppEngine
         {
             if (!string.IsNullOrEmpty(search))
             {
+                search = search.Trim();
                 try
                 {
                     /* Best search:
@@ -666,6 +667,34 @@ namespace AppEngine
             {
                 return null;
             }
+        }
+
+        public static bool ConfirmBookNameExists(string toSearch)
+        {
+            if (!string.IsNullOrEmpty(toSearch))
+            {
+                toSearch = toSearch.Trim();
+                foreach (XmlElement XMLElement in BibleBookNames.ChildNodes)
+                {
+                    if (XMLElement.Attributes["c"].Value.ToLower() == toSearch.ToLower())
+                    {
+                        return true;
+                    }
+                    if (XMLElement.Attributes["abbr"].Value.ToLower() == toSearch.ToLower())
+                    {
+                        return true;
+                    }
+                    else if (XMLElement.Attributes["short"].Value.ToLower() == toSearch.ToLower())
+                    {
+                        return true;
+                    }
+                    else if(toSearch.Length>=3 && XMLElement.Attributes["short"].Value.ToLower().StartsWith(toSearch.ToLower()))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -1006,7 +1035,7 @@ namespace AppEngine
         /// Returns the number of books in the Bible
         /// </summary>
         /// <returns></returns>
-        private static int BookCount()
+        public static int BookCount()
         {
             int bookCount = KJVBibleNode.ChildNodes.Count;
 
@@ -1017,7 +1046,7 @@ namespace AppEngine
         /// </summary>
         /// <param name="BOOK">The specified book</param>
         /// <returns></returns>
-        private static int ChapterCount(string BOOK)
+        public static int ChapterCount(string BOOK)
         {
             int chapterCount = 0;
 
@@ -1037,7 +1066,7 @@ namespace AppEngine
         /// <param name="BOOK">The specified book</param>
         /// <param name="CHAPTER">The specified chapter</param>
         /// <returns></returns>
-        private static int VerseCount(string BOOK, string CHAPTER)
+        public static int VerseCount(string BOOK, string CHAPTER)
         {
             int verseCount = 0;
 
@@ -1059,7 +1088,7 @@ namespace AppEngine
             return verseCount;
         }
 
-        private static string GetBookName_c(string name_short)
+        public static string GetBookName_c(string name_short)
         {
             foreach (XmlNode Book in BibleBookNames.ChildNodes)
             {
@@ -1070,7 +1099,7 @@ namespace AppEngine
             }
             return null;
         }
-        private static string GetBookName_abbr(string name_c)
+        public static string GetBookName_abbr(string name_c)
         {
             foreach (XmlNode Book in BibleBookNames.ChildNodes)
             {
@@ -1081,7 +1110,7 @@ namespace AppEngine
             }
             return null;
         }
-        private static string GetBookName_short(string name_c)
+        public static string GetBookName_short(string name_c)
         {
             foreach (XmlNode Book in BibleBookNames.ChildNodes)
             {

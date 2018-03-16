@@ -64,8 +64,8 @@ namespace AppUI
             Dock = DockStyle.Top;
             Visible = true;
             SizeChanged += new EventHandler(ControlSizeChanged);
-            rtb.Font = new Font(tscmbxFontFamily.Text, Convert.ToInt32(tscmbxFontSize.Text));
-            UpdateToolbar();
+            //rtb.Font = new Font(tscmbxFontFamily.Text, float.Parse(tscmbxFontSize.Text));
+            //UpdateToolbar();
         }
 
         private void InitializeComponents()
@@ -95,9 +95,13 @@ namespace AppUI
             rtb.KeyDown += Rtb_KeyDown;
             rtb.KeyPress += Rtb_KeyPress;
             if (RichTextBoxEx.ffInstalledFonts != null)
-            { ffInstalledFonts = RichTextBoxEx.ffInstalledFonts; }
+            {
+                ffInstalledFonts = RichTextBoxEx.ffInstalledFonts;
+            }
             else
-            { ffInstalledFonts = new System.Drawing.Text.InstalledFontCollection().Families; }
+            {
+                ffInstalledFonts = new System.Drawing.Text.InstalledFontCollection().Families;
+            }
             #endregion
 
             #region ****************** ToolStripButton Copy ******************
@@ -250,10 +254,10 @@ namespace AppUI
             #endregion
 
             #region ****************** ToolStripCombobox FontSize ******************
-            tscmbxFontSize = new ToolStripComboBox("8")
+            tscmbxFontSize = new ToolStripComboBox("12")
             {
                 Name = "tscmbxFontSize",
-                Text = "20"
+                Text = "12"
             };
             tscmbxFontSize.TextChanged += new EventHandler(Control_TextChanged);
             tscmbxFontSize.ToolTipText = "Set font-size";
@@ -448,7 +452,6 @@ namespace AppUI
         {
             //Update the toolbar buttons
             UpdateToolbar();
-
             //Send the SelChangedEvent
             SelChanged?.Invoke(this, e);
         }
@@ -692,14 +695,12 @@ namespace AppUI
                 tsiUnderline.Checked = fnt.Underline;
 
                 //Check the correct font
-                if (tscmbxFontFamily.Items.Contains(fnt.FontFamily.Name) &&
-                    tscmbxFontFamily.Text != fnt.FontFamily.Name)
+                if (tscmbxFontFamily.Items.Contains(fnt.FontFamily.Name))
                 {
                     tscmbxFontFamily.Text = (fnt.FontFamily.Name);
                 }
                 //Check the correct font size
-                if (tscmbxFontSize.Items.Contains(fnt.SizeInPoints) &&
-                    tscmbxFontSize.Text != fnt.SizeInPoints.ToString())
+                if (tscmbxFontSize.Items.Contains(fnt.SizeInPoints))
                 {
                     tscmbxFontSize.Text = (Convert.ToInt32(fnt.SizeInPoints).ToString());
                 }

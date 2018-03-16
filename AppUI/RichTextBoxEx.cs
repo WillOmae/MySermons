@@ -87,42 +87,39 @@ namespace AppUI
              * The result of the above step is then inserted as a custom link.
              */
 
-            if ((boundEnd - boundStart) <= 3)
+            if ((boundEnd - boundStart) > 3)
             {
-                return;
-            }
+                string parseString = GetTextBetweenBounds(boundStart, boundEnd);
+                List<XMLBible.BIBLETEXTINFO> list = XMLBible.ParseStringToVerse(parseString);
 
-            string parseString = GetTextBetweenBounds(boundStart, boundEnd);
-            List<XMLBible.BIBLETEXTINFO> list = XMLBible.ParseStringToVerse(parseString);
-
-            if (list != null && list.Count != 0)
-            {
-                int cursorPosition = -1;
-                DeleteRTBText(boundStart, boundEnd);
-                for (int i = 0; i < list.Count; i++)
+                if (list != null && list.Count != 0)
                 {
-                    if (i == (list.Count - 1))//last item in the list
+                    int cursorPosition = -1;
+                    DeleteRTBText(boundStart, boundEnd);
+                    for (int i = 0; i < list.Count; i++)
                     {
-                        InsertVerse(list[i].FriendlyText, list[i].bcv, boundStart);
-                        cursorPosition = boundStart + list[i].FriendlyText.Length;
+                        if (i == (list.Count - 1))//last item in the list
+                        {
+                            InsertVerse(list[i].FriendlyText, list[i].bcv, boundStart);
+                            cursorPosition = boundStart + list[i].FriendlyText.Length;
+                        }
+                        else
+                        {
+                            InsertVerse(list[i].FriendlyText + "; ", list[i].bcv, boundStart);
+                            cursorPosition = boundStart + list[i].FriendlyText.Length + 1;
+                        }
+                        boundStart = SelectionStart;
                     }
-                    else
-                    {
-                        InsertVerse(list[i].FriendlyText + "; ", list[i].bcv, boundStart);
-                        cursorPosition = boundStart + list[i].FriendlyText.Length + 1;
-                    }
-                    boundStart = SelectionStart;
+                    SelectionStart = cursorPosition;
+                    return;
                 }
-                SelectionStart = cursorPosition;
             }
-            else
-            {
-                Text = Text.Insert(boundStart, "[");
-                Text = Text.Remove(boundStart + 1, 1);
-                Text = Text.Insert(boundEnd, "]");
-                Text = Text.Remove(boundEnd + 1, 1);
-                SelectionStart = boundEnd + 1;
-            }
+            Text = Text.Insert(boundStart, "[");
+            Text = Text.Remove(boundStart + 1, 1);
+            Text = Text.Insert(boundEnd, "]");
+            Text = Text.Remove(boundEnd + 1, 1);
+            SelectionStart = boundEnd + 1;
+            return;
         }
         public void InsertVerse(string text, string hyperlink, int position)
         {
@@ -134,9 +131,9 @@ namespace AppUI
             sb.Append(@"\b ");
             sb.Append(text);
             sb.Append(@"\b0 ");
-            sb.Append(@"\v ");
-            sb.Append(hyperlink);
-            sb.Append(@"\v0 ");
+            //sb.Append(@"\v ");
+            //sb.Append(hyperlink);
+            //sb.Append(@"\v0 ");
 
             SelectionStart = position;
             SelectedRtf = sb.ToString();
@@ -158,44 +155,6 @@ namespace AppUI
             {
                 return null;
             }
-        }
-        /// <summary>
-        /// Gets the hidden text corresponding to the link text.
-        /// </summary>
-        /// <param name="linkText"></param>
-        /// <returns></returns>
-        private string GetLinkHiddenText(string linkText)
-        {
-            /* Here's the logic:
-             * When the document is created with verses,
-             * the friendly verse text is placed between \b and \b0 -> bold;
-             * the bcv is placed between \v and \v0 -> hidden.
-             * The purpose of this method is to find the text between \v and \v0
-             * just after the linkText.
-             */
-
-            int currentPosition = SelectionStart;
-            string rtf = Rtf;
-
-            int indexOfLinkText = Text.IndexOf(linkText);
-            if (indexOfLinkText != -1)
-            {
-                Select(indexOfLinkText, linkText.Length);
-                int indexOfSelectedText = rtf.IndexOf(SelectedText);
-                rtf = rtf.Substring(indexOfSelectedText);
-                int iStart = rtf.IndexOf(@"\v ");
-                if (iStart != -1)
-                {
-                    rtf = rtf.Substring(iStart + 3);
-                    Select(currentPosition, 0);
-                    int iEnd = rtf.IndexOf(@"\");
-                    if (iEnd != -1)
-                    {
-                        return rtf.Substring(0, iEnd);
-                    }
-                }
-            }
-            return linkText;
         }
 
         #region EventHandlers
@@ -239,16 +198,20 @@ namespace AppUI
             }
             catch
             {
-                string szHeader = e.LinkText;
-                List<string> listofTextToDisplay = new List<string>();
-
-                string bcv = GetLinkHiddenText(e.LinkText);
-                XMLBible.BCVSTRUCT start = new XMLBible.BCVSTRUCT();
-                XMLBible.BCVSTRUCT end = new XMLBible.BCVSTRUCT();
-                if (XMLBible.ParseForBCVStructs(bcv, ref start, ref end) != "NOT_A_VERSE")
+                string friendlyText = e.LinkText;
+                var list1 = XMLBible.ParseStringToVerse(friendlyText);
+                if (list1.Count > 0)
                 {
-                    listofTextToDisplay = XMLBible.GetVerseText(ref start, ref end);
-                    TextCardHolder PopUp = new TextCardHolder(listofTextToDisplay.ToArray(), szHeader);
+                    XMLBible.BCVSTRUCT start = new XMLBible.BCVSTRUCT();
+                    XMLBible.BCVSTRUCT end = new XMLBible.BCVSTRUCT();
+                    var bcv = list1[0].bcv;
+                    if (XMLBible.ParseForBCVStructs(bcv, ref start, ref end) != "NOT_A_VERSE")
+                    {
+                        string szHeader = e.LinkText;
+                        List<string> listofTextToDisplay = new List<string>();
+                        listofTextToDisplay = XMLBible.GetVerseText(ref start, ref end);
+                        TextCardHolder PopUp = new TextCardHolder(listofTextToDisplay.ToArray(), szHeader);
+                    }
                 }
             }
         }
@@ -628,34 +591,3 @@ namespace AppUI
         }
     }
 }
-
-/*
-private string FxnGetLastTypedWord(int iSelectionStart, char delimiter)
-{
-    Select(iSelectionStart, 1);
-    SelectedText = "";
-    int wordEndPosition = iSelectionStart;
-    int currentPosition = wordEndPosition;
-
-    while (currentPosition > 0 && Text[currentPosition - 1] != delimiter)
-    {
-        currentPosition--;
-    }
-    if ((wordEndPosition - currentPosition) < 2)
-    {
-        return null;
-    }
-    string foundText = Text.Substring(currentPosition, wordEndPosition - currentPosition);
-    //Just to check an error
-    try
-    {
-        Select(currentPosition - 1, (wordEndPosition - currentPosition) + 1);//currentPosition - 1 to include the preceding tilde
-        SelectedRtf = "";
-        SelectionStart = currentPosition - 1;
-    }
-    catch
-    {
-        SelectionStart = wordEndPosition;
-    }
-    return foundText;
-}*/
