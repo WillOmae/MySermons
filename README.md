@@ -5,6 +5,7 @@ MySermons is an application designed to bring all your Bible study and sermon no
 ## Features
 + Create, edit, delete and print notes
 + Look up Bible verses
++ Customizable skin
 
 
 ## Contacts
